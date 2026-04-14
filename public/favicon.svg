@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="50" height="100" fill="#1d4ed8"/>
+  <rect x="50" width="50" height="100" fill="#b91c1c"/>
+  <text x="50" y="65" font-size="48" font-weight="900" text-anchor="middle" fill="white" font-family="sans-serif">좌우</text>
+</svg>
