@@ -18,7 +18,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS);
 
-  const { result } = useNewsSearch(searchQuery, filters);
+  const { result, isLoading, error } = useNewsSearch(searchQuery, filters);
 
   const handleSearch = useCallback((q: string) => {
     setSearchQuery(q);
@@ -124,7 +124,7 @@ export default function App() {
                     {searchQuery}
                     <span className="text-gray-500 font-normal">"</span> 검색 결과
                   </h2>
-                  {result && (
+                  {result && !isLoading && (
                     <p className="text-sm text-gray-500 mt-0.5">
                       좌편향{' '}
                       <span className="font-semibold text-blue-600">
@@ -148,17 +148,45 @@ export default function App() {
                 </button>
               </div>
 
-              {!hasResults ? (
+              {/* Loading */}
+              {isLoading && (
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                  <div className="flex gap-2">
+                    <div className="h-3 w-3 rounded-full bg-blue-500 animate-bounce [animation-delay:-0.3s]" />
+                    <div className="h-3 w-3 rounded-full bg-gray-400 animate-bounce [animation-delay:-0.15s]" />
+                    <div className="h-3 w-3 rounded-full bg-red-500 animate-bounce" />
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    좌·우 언론사 기사를 불러오는 중…
+                  </p>
+                </div>
+              )}
+
+              {/* Error */}
+              {!isLoading && error && (
+                <div className="rounded-xl border border-orange-200 bg-orange-50 p-6 text-center">
+                  <p className="font-medium text-orange-700 mb-1">뉴스를 불러오지 못했습니다</p>
+                  <p className="text-sm text-orange-500">{error}</p>
+                  <p className="text-xs text-gray-400 mt-3">
+                    CORS 프록시 서버가 일시적으로 불안정할 수 있습니다. 잠시 후 다시 검색해주세요.
+                  </p>
+                </div>
+              )}
+
+              {/* Results */}
+              {!isLoading && !error && !hasResults && result && (
                 <div className="text-center py-16">
                   <span className="text-4xl mb-4 block">🔍</span>
                   <p className="text-gray-600 font-medium">
                     "{searchQuery}"에 대한 기사를 찾지 못했습니다
                   </p>
                   <p className="text-sm text-gray-400 mt-2">
-                    부동산, 최저임금, 검찰, 기후, 북한, 의료, 경제 등을 검색해보세요
+                    다른 키워드로 검색해보세요
                   </p>
                 </div>
-              ) : (
+              )}
+
+              {!isLoading && !error && hasResults && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                   <NewsColumn
                     side="left"

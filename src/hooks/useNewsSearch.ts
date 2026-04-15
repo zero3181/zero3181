@@ -1,57 +1,63 @@
-import { useMemo } from 'react';
-import { mockArticles } from '../data/mockArticles';
-import { SearchFilters, SearchResult } from '../types';
+import { useState, useEffect } from 'react';
+import { fetchGoogleNews } from '../utils/googleNewsApi';
+import { Article, SearchFilters, SearchResult } from '../types';
+
+function applyFilters(articles: Article[], filters: SearchFilters): Article[] {
+  const now = new Date();
+  return articles.filter((a) => {
+    const d = new Date(a.publishedAt);
+    if (filters.dateRange === 'today') {
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      if (d < todayStart) return false;
+    } else if (filters.dateRange === 'week') {
+      if (d < new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)) return false;
+    } else if (filters.dateRange === 'month') {
+      if (d < new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)) return false;
+    }
+    if (filters.biasLevel !== 'all' && a.biasLevel !== filters.biasLevel) return false;
+    return true;
+  });
+}
 
 export function useNewsSearch(
   keyword: string,
   filters: SearchFilters,
-): { result: SearchResult | null } {
-  const result = useMemo(() => {
+): { result: SearchResult | null; isLoading: boolean; error: string | null } {
+  const [result, setResult]     = useState<SearchResult | null>(null);
+  const [isLoading, setLoading] = useState(false);
+  const [error, setError]       = useState<string | null>(null);
+
+  useEffect(() => {
     const q = keyword.trim();
-    if (!q) return null;
+    if (!q) {
+      setResult(null);
+      setError(null);
+      return;
+    }
 
-    const now = new Date();
-    const queryTokens = q.toLowerCase().split(/\s+/);
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
 
-    const filtered = mockArticles.filter((article) => {
-      const haystack = (article.title + ' ' + article.topic).toLowerCase();
-      const matchesKeyword = queryTokens.every((token) =>
-        haystack.includes(token),
-      );
-      if (!matchesKeyword) return false;
+    Promise.all([fetchGoogleNews(q, 'LEFT'), fetchGoogleNews(q, 'RIGHT')])
+      .then(([left, right]) => {
+        if (cancelled) return;
+        setResult({
+          keyword: q,
+          leftArticles:  applyFilters(left,  filters),
+          rightArticles: applyFilters(right, filters),
+        });
+      })
+      .catch((err: Error) => {
+        if (cancelled) return;
+        setError(err.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-      const articleDate = new Date(article.publishedAt);
-      if (filters.dateRange === 'today') {
-        const todayStart = new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate(),
-        );
-        if (articleDate < todayStart) return false;
-      } else if (filters.dateRange === 'week') {
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        if (articleDate < weekAgo) return false;
-      } else if (filters.dateRange === 'month') {
-        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        if (articleDate < monthAgo) return false;
-      }
-
-      if (filters.biasLevel !== 'all' && article.biasLevel !== filters.biasLevel) {
-        return false;
-      }
-
-      return true;
-    });
-
-    const byDate = (a: { publishedAt: string }, b: { publishedAt: string }) =>
-      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
-
-    return {
-      keyword: q,
-      leftArticles: filtered.filter((a) => a.bias === 'LEFT').sort(byDate),
-      rightArticles: filtered.filter((a) => a.bias === 'RIGHT').sort(byDate),
-    };
+    return () => { cancelled = true; };
   }, [keyword, filters]);
 
-  return { result };
+  return { result, isLoading, error };
 }
