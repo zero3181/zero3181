@@ -1,33 +1,20 @@
-export type BiasType = 'LEFT' | 'RIGHT';
-export type DateRangeFilter = 'today' | 'week' | 'month' | 'all';
-export type BiasLevelFilter = 'all' | 'moderate' | 'extreme';
-
-export interface Media {
-  id: number;
-  name: string;
-  bias: BiasType;
-  url: string;
-}
-
-export interface Article {
+export interface Photo {
   id: string;
-  mediaId: number;
-  mediaName: string;
-  title: string;
   url: string;
-  publishedAt: string;
-  topic: string;
-  bias: BiasType;
-  biasLevel: 'moderate' | 'extreme';
+  caption: string;
+  date: string;
 }
 
-export interface SearchFilters {
-  dateRange: DateRangeFilter;
-  biasLevel: BiasLevelFilter;
+export interface TravelLocation {
+  id: string;
+  city: string;
+  country: string;
+  countryCode: string; // ISO 3166-1 numeric for world-atlas topojson
+  coordinates: [number, number]; // [longitude, latitude]
+  photos: Photo[];
+  visitDate: string;
+  description: string;
+  continent: Continent;
 }
 
-export interface SearchResult {
-  keyword: string;
-  leftArticles: Article[];
-  rightArticles: Article[];
-}
+export type Continent = 'All' | 'Asia' | 'Europe' | 'Americas' | 'Africa' | 'Oceania';
