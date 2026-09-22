@@ -1,10 +1,12 @@
 :root {
-  --paper: #faf6ec;
-  --ink: #262322;
-  --ink-soft: #7a7468;
-  --accent: #2f5fdb;
-  --accent-soft: #eaf0ff;
-  --line: #c9c2b2;
+  --bg: #f4f5f8;
+  --card: #ffffff;
+  --ink: #12141c;
+  --ink-soft: #6b7280;
+  --line: #e2e5ea;
+  --blue: #1258ff;
+  --blue-soft: #eaf0ff;
+  --navy: #0a1a4a;
   --radius: 14px;
 }
 
@@ -13,15 +15,10 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--paper);
+  background: var(--bg);
   color: var(--ink);
-  font-family: 'Gaegu', 'Malgun Gothic', sans-serif;
-}
-
-body {
-  background-image: radial-gradient(var(--line) 1px, transparent 1px);
-  background-size: 18px 18px;
-  background-position: -9px -9px;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .page {
@@ -33,20 +30,22 @@ body {
 /* HERO */
 .hero {
   text-align: center;
-  padding: 40px 10px 8px;
+  padding: 40px 10px 6px;
 }
 .hero-eyebrow {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
-  color: var(--accent);
-  letter-spacing: 0.05em;
-  margin: 0 0 8px;
+  color: var(--blue);
+  letter-spacing: 0.06em;
+  margin: 0 0 10px;
 }
 .hero h1 {
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 1.3;
-  margin: 0 0 8px;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  margin: 0 0 6px;
+  color: var(--navy);
 }
 
 /* CHART */
@@ -54,82 +53,91 @@ body {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  padding-top: 12px;
+  padding-top: 14px;
 }
 
 .node {
-  border: 2.2px solid var(--ink);
-  background: #fff;
+  border: 1.5px solid var(--line);
+  background: var(--card);
   border-radius: var(--radius);
   text-align: center;
+  box-shadow: 0 1px 2px rgba(16, 20, 30, 0.04);
 }
 
 .start {
   align-self: center;
-  padding: 10px 26px;
+  padding: 9px 24px;
   border-radius: 999px;
-  font-size: 17px;
+  font-size: 14.5px;
   font-weight: 700;
-  transform: rotate(-1deg);
+  color: var(--ink-soft);
+  border-color: var(--line);
+  box-shadow: none;
 }
 
 .final {
-  padding: 22px 20px 20px;
-  transform: rotate(0.6deg);
+  padding: 24px 20px 22px;
+  border: 1.5px solid var(--navy);
 }
 .final-icon {
-  width: 26px;
-  height: 26px;
-  color: var(--accent);
-  margin-bottom: 4px;
+  width: 24px;
+  height: 24px;
+  color: var(--blue);
+  margin-bottom: 6px;
 }
 .dday {
-  font-size: 34px;
-  font-weight: 700;
-  color: var(--accent);
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--blue);
   margin: 0;
+  letter-spacing: -0.02em;
 }
 .final-label {
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 700;
-  margin: 2px 0 10px;
+  color: var(--navy);
+  margin: 4px 0 10px;
 }
 .final-note {
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--ink-soft);
   line-height: 1.6;
   margin: 0;
 }
 
-/* DIAMOND */
+/* DIAMOND (decision) */
 .diamond {
   align-self: center;
   justify-self: center;
-  width: 180px;
-  height: 180px;
-  border-radius: 18px;
+  width: 168px;
+  height: 168px;
+  border-radius: 20px;
+  border: 1.5px solid var(--navy);
   transform: rotate(45deg);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 4px 0;
+  margin: 6px 0;
+  background: var(--card);
+  box-shadow: 0 1px 2px rgba(16, 20, 30, 0.04);
 }
 .diamond-label {
   display: block;
-  width: 118px;
+  width: 116px;
   transform: rotate(-45deg);
-  font-size: 17px;
+  font-size: 16.5px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.4;
+  color: var(--navy);
 }
 
 /* ARROWS */
 .arrow {
   align-self: center;
-  width: 2.2px;
-  height: 30px;
-  background: var(--ink);
-  margin: 2px auto;
+  width: 2px;
+  height: 26px;
+  background: var(--line);
+  margin: 0 auto;
   position: relative;
 }
 .arrow::after {
@@ -138,37 +146,36 @@ body {
   bottom: -1px;
   left: 50%;
   transform: translateX(-50%);
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 9px solid var(--ink);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--ink-soft);
 }
-.arrow.small { height: 16px; }
+.arrow.small { height: 14px; }
 
 /* BOX (clickable action) */
 .box {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 13px 16px;
-  font-size: 15.5px;
-  font-weight: 700;
+  gap: 9px;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--ink);
   text-decoration: none;
-  box-shadow: 3px 3px 0 var(--ink);
+  transition: box-shadow .15s ease, transform .15s ease;
 }
-.box:nth-of-type(odd) { transform: rotate(-0.6deg); }
-.box:nth-of-type(even) { transform: rotate(0.6deg); }
-.box:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.box:active { transform: scale(0.98); }
 .box-icon {
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
   flex-shrink: 0;
-  color: var(--accent);
+  color: var(--blue);
 }
 
 .box.link-missing {
   border-style: dashed;
+  border-color: var(--ink-soft);
   opacity: 0.7;
 }
 
@@ -177,10 +184,9 @@ body {
   padding: 16px 14px 14px;
   display: flex;
   flex-direction: column;
-  transform: rotate(-0.4deg);
 }
 .group-label {
-  font-size: 14.5px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--ink-soft);
   margin: 0 0 10px;
@@ -192,7 +198,7 @@ body {
    rejoins the trunk right after, classic flowchart skip pattern) */
 .decision {
   display: grid;
-  grid-template-columns: 1fr 34px;
+  grid-template-columns: 1fr 30px;
   align-items: stretch;
   margin: 0 0 2px;
 }
@@ -206,14 +212,14 @@ body {
 }
 .arrow-cell {
   position: relative;
-  height: 28px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .rail-line {
-  width: 2.2px;
-  background: var(--accent);
+  width: 2px;
+  background: var(--ink-soft);
   align-self: stretch;
 }
 .corner-svg { flex-shrink: 0; overflow: visible; }
@@ -225,17 +231,17 @@ body {
 
 .path-label {
   position: absolute;
-  top: -3px;
+  top: -2px;
   font-size: 11.5px;
   font-weight: 700;
 }
-.label-yes { left: 50%; transform: translate(6px, -100%); color: var(--accent); }
-.label-no { left: 1px; transform: translateY(-100%); color: var(--ink-soft); }
+.label-yes { left: 50%; transform: translate(8px, -100%); color: var(--blue); }
+.label-no { left: 0; transform: translateY(-100%); color: var(--ink-soft); }
 
 /* FOOTER */
 .footer {
   text-align: center;
-  padding: 28px 10px 0;
+  padding: 30px 10px 0;
   font-size: 12px;
   color: var(--ink-soft);
 }
