@@ -44,8 +44,34 @@ html, body {
   font-weight: 800;
   line-height: 1.35;
   letter-spacing: -0.01em;
-  margin: 0 0 6px;
+  margin: 0 0 16px;
   color: var(--navy);
+}
+
+.dday-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--navy);
+  border-radius: 999px;
+}
+.dday-icon {
+  width: 16px;
+  height: 16px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.dday {
+  font-size: 19px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+.dday-sub {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* CHART */
@@ -76,27 +102,14 @@ html, body {
 }
 
 .final {
-  padding: 24px 20px 22px;
+  padding: 22px 20px;
   border: 1.5px solid var(--navy);
-}
-.final-icon {
-  width: 24px;
-  height: 24px;
-  color: var(--blue);
-  margin-bottom: 6px;
-}
-.dday {
-  font-size: 36px;
-  font-weight: 800;
-  color: var(--blue);
-  margin: 0;
-  letter-spacing: -0.02em;
 }
 .final-label {
   font-size: 15.5px;
   font-weight: 700;
   color: var(--navy);
-  margin: 4px 0 10px;
+  margin: 0 0 8px;
 }
 .final-note {
   font-size: 13px;
@@ -105,29 +118,32 @@ html, body {
   margin: 0;
 }
 
-/* DIAMOND (decision) */
-.diamond {
-  align-self: center;
-  justify-self: center;
-  width: 168px;
-  height: 168px;
-  border-radius: 20px;
-  border: 1.5px solid var(--navy);
-  transform: rotate(45deg);
+/* QUESTION (decision point, plain box instead of a rotated diamond) */
+.question {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--blue-soft);
+  border: 1.5px solid var(--blue);
+  text-align: left;
+}
+.q-badge {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 6px 0;
-  background: var(--card);
-  box-shadow: 0 1px 2px rgba(16, 20, 30, 0.04);
 }
-.diamond-label {
-  display: block;
-  width: 116px;
-  transform: rotate(-45deg);
-  font-size: 16.5px;
+.q-text {
+  font-size: 16px;
   font-weight: 700;
-  line-height: 1.4;
   color: var(--navy);
 }
 
