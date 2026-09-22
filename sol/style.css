@@ -32,21 +32,6 @@ html, body {
   text-align: center;
   padding: 40px 10px 6px;
 }
-.hero-eyebrow {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--blue);
-  letter-spacing: 0.06em;
-  margin: 0 0 10px;
-}
-.hero h1 {
-  font-size: 26px;
-  font-weight: 800;
-  line-height: 1.35;
-  letter-spacing: -0.01em;
-  margin: 0 0 16px;
-  color: var(--navy);
-}
 
 .dday-badge {
   display: inline-flex;
@@ -86,28 +71,31 @@ html, body {
   border: 1.5px solid var(--line);
   background: var(--card);
   border-radius: var(--radius);
-  text-align: center;
+  text-align: left;
   box-shadow: 0 1px 2px rgba(16, 20, 30, 0.04);
 }
 
 .start {
-  align-self: center;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 20px;
-  border-radius: 999px;
-  font-size: 14.5px;
-  font-weight: 700;
-  color: var(--ink-soft);
+  padding: 14px 16px;
   border-color: var(--line);
-  box-shadow: none;
+}
+.start-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+.start-note {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue);
+  margin: 0;
 }
 
 .final {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   padding: 22px 20px;
   border: 1.5px solid var(--navy);
 }
@@ -204,7 +192,7 @@ html, body {
 .box {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 9px;
   padding: 14px 16px;
   font-size: 15px;
@@ -238,7 +226,6 @@ html, body {
   font-weight: 700;
   color: var(--ink-soft);
   margin: 0 0 10px;
-  text-align: center;
 }
 
 /* FOOTER */
