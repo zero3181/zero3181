@@ -57,29 +57,41 @@
     <div class="node start">이벤트 시작</div>
     <div class="arrow"></div>
 
-    <div class="node diamond"><span class="diamond-label">슈퍼SOL이<br>처음인가요?</span></div>
+    <div class="decision">
+      <div class="node diamond d-full"><span class="diamond-label">슈퍼SOL이<br>처음인가요?</span></div>
 
-    <div class="split">
-      <div class="stem">
-        <span class="tag tag-yes">YES</span>
-        <span class="fork-nub"></span>
-        <span class="stem-line"></span>
-        <span class="tag tag-no">NO</span>
-      </div>
-      <div class="branch">
-        <a class="node box" data-link="appInstall">
-          <svg class="box-icon"><use href="#icon-phone"/></svg>
-          슈퍼SOL 설치하기
-        </a>
+      <div class="d-main arrow-cell">
+        <span class="path-label label-yes">YES</span>
         <div class="arrow small"></div>
-        <a class="node box" data-link="superSolSignup">
-          <svg class="box-icon"><use href="#icon-coin"/></svg>
-          네이버포인트 1만원 받기
-        </a>
       </div>
-    </div>
+      <div class="d-gutter corner-top">
+        <span class="path-label label-no">NO</span>
+        <svg class="corner-svg" viewBox="0 0 34 28" width="34" height="28"><path d="M0,14 H17 V28" fill="none" stroke="var(--accent)" stroke-width="2.2"/></svg>
+      </div>
 
-    <div class="arrow small"></div>
+      <a class="node box d-main" data-link="appInstall">
+        <svg class="box-icon"><use href="#icon-phone"/></svg>
+        슈퍼SOL 설치하기
+      </a>
+      <div class="d-gutter"><span class="rail-line"></span></div>
+
+      <div class="d-main arrow-cell"><div class="arrow small"></div></div>
+      <div class="d-gutter"><span class="rail-line"></span></div>
+
+      <a class="node box d-main" data-link="superSolSignup">
+        <svg class="box-icon"><use href="#icon-coin"/></svg>
+        네이버포인트 1만원 받기
+      </a>
+      <div class="d-gutter corner-bottom">
+        <span class="rail-line rail-fill"></span>
+        <svg class="corner-svg" viewBox="0 0 34 28" width="34" height="28">
+          <path d="M17,0 V14 H2" fill="none" stroke="var(--accent)" stroke-width="2.2"/>
+          <polygon points="2,14 9,10.5 9,17.5" fill="var(--accent)"/>
+        </svg>
+      </div>
+
+      <div class="d-full arrow-cell"><div class="arrow"></div></div>
+    </div>
 
     <div class="node group">
       <p class="group-label">SOL LINK 고객이라면</p>
@@ -100,29 +112,42 @@
     </div>
 
     <div class="arrow"></div>
-    <div class="node diamond"><span class="diamond-label">신한투자증권,<br>처음인가요?</span></div>
 
-    <div class="split">
-      <div class="stem">
-        <span class="tag tag-yes">YES</span>
-        <span class="fork-nub"></span>
-        <span class="stem-line"></span>
-        <span class="tag tag-no">NO</span>
-      </div>
-      <div class="branch">
-        <a class="node box" data-link="teslaEvent">
-          <svg class="box-icon"><use href="#icon-ticket"/></svg>
-          투자쿠폰 2만원 받기
-        </a>
+    <div class="decision">
+      <div class="node diamond d-full"><span class="diamond-label">신한투자증권,<br>처음인가요?</span></div>
+
+      <div class="d-main arrow-cell">
+        <span class="path-label label-yes">YES</span>
         <div class="arrow small"></div>
-        <a class="node box" data-link="teslaEvent">
-          <svg class="box-icon"><use href="#icon-car"/></svg>
-          테슬라 응모하기
-        </a>
       </div>
-    </div>
+      <div class="d-gutter corner-top">
+        <span class="path-label label-no">NO</span>
+        <svg class="corner-svg" viewBox="0 0 34 28" width="34" height="28"><path d="M0,14 H17 V28" fill="none" stroke="var(--accent)" stroke-width="2.2"/></svg>
+      </div>
 
-    <div class="arrow small"></div>
+      <a class="node box d-main" data-link="teslaEvent">
+        <svg class="box-icon"><use href="#icon-ticket"/></svg>
+        투자쿠폰 2만원 받기
+      </a>
+      <div class="d-gutter"><span class="rail-line"></span></div>
+
+      <div class="d-main arrow-cell"><div class="arrow small"></div></div>
+      <div class="d-gutter"><span class="rail-line"></span></div>
+
+      <a class="node box d-main" data-link="teslaEvent">
+        <svg class="box-icon"><use href="#icon-car"/></svg>
+        테슬라 응모하기
+      </a>
+      <div class="d-gutter corner-bottom">
+        <span class="rail-line rail-fill"></span>
+        <svg class="corner-svg" viewBox="0 0 34 28" width="34" height="28">
+          <path d="M17,0 V14 H2" fill="none" stroke="var(--accent)" stroke-width="2.2"/>
+          <polygon points="2,14 9,10.5 9,17.5" fill="var(--accent)"/>
+        </svg>
+      </div>
+
+      <div class="d-full arrow-cell"><div class="arrow"></div></div>
+    </div>
 
     <div class="node final">
       <svg class="box-icon final-icon"><use href="#icon-flag"/></svg>
