@@ -139,8 +139,6 @@ html, body {
   flex-direction: column;
   gap: 10px;
   padding: 14px 16px;
-  background: var(--blue-soft);
-  border: 1.5px solid var(--blue);
   text-align: left;
 }
 .q-row {
