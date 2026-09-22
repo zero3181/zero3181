@@ -208,6 +208,16 @@ html, body {
   flex-shrink: 0;
   color: var(--blue);
 }
+.box::after {
+  content: '›';
+  margin-left: auto;
+  padding-left: 8px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
 
 .box.link-missing {
   border-style: dashed;
@@ -217,12 +227,15 @@ html, body {
 
 /* HIGHLIGHT (the links that actually drive signups) */
 .box-highlight {
-  background: #dbe6ff;
+  background: var(--blue);
   border: 2px solid var(--blue);
+  color: #fff;
   font-weight: 700;
-  box-shadow: 0 3px 10px rgba(18, 88, 255, 0.18);
+  box-shadow: 0 3px 10px rgba(18, 88, 255, 0.25);
 }
-.box-highlight .num-badge { background: var(--navy); }
+.box-highlight .box-icon { color: #fff; }
+.box-highlight .num-badge { background: #fff; color: var(--blue); }
+.box-highlight::after { color: rgba(255, 255, 255, 0.85); }
 
 /* GROUP BOX (contains several stacked boxes) */
 .group {
