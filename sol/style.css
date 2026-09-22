@@ -92,7 +92,10 @@ html, body {
 
 .start {
   align-self: center;
-  padding: 9px 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
   border-radius: 999px;
   font-size: 14.5px;
   font-weight: 700;
@@ -102,9 +105,13 @@ html, body {
 }
 
 .final {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 22px 20px;
   border: 1.5px solid var(--navy);
 }
+.final .num-badge { margin-bottom: 10px; }
 .final-label {
   font-size: 15.5px;
   font-weight: 700;
@@ -118,34 +125,59 @@ html, body {
   margin: 0;
 }
 
-/* QUESTION (decision point, plain box instead of a rotated diamond) */
-.question {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
-  background: var(--blue-soft);
-  border: 1.5px solid var(--blue);
-  text-align: left;
-}
-.q-badge {
+/* NUMBER BADGE (shown on every node so YES/NO can point at a number
+   instead of a drawn connector line) */
+.num-badge {
   flex-shrink: 0;
   width: 26px;
   height: 26px;
   border-radius: 50%;
   background: var(--blue);
   color: #fff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+.num-badge-neutral {
+  background: var(--line);
+  color: var(--ink-soft);
+}
+
+/* QUESTION (decision point, plain box instead of a rotated diamond) */
+.question {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--blue-soft);
+  border: 1.5px solid var(--blue);
+  text-align: left;
+}
+.q-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .q-text {
   font-size: 16px;
   font-weight: 700;
   color: var(--navy);
 }
+.q-jump {
+  display: flex;
+  gap: 8px;
+  padding-left: 36px;
+}
+.jump {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+.jump-yes { background: var(--blue); color: #fff; }
+.jump-no { background: #fff; color: var(--ink-soft); border: 1px solid var(--line); }
 
 /* ARROWS */
 .arrow {
@@ -208,51 +240,6 @@ html, body {
   margin: 0 0 10px;
   text-align: center;
 }
-
-/* DECISION (diamond → YES flows straight down through its boxes;
-   NO bypasses them via a right-angle detour in the side rail and
-   rejoins the trunk right after, classic flowchart skip pattern) */
-.decision {
-  display: grid;
-  grid-template-columns: 1fr 30px;
-  align-items: stretch;
-  margin: 0 0 2px;
-}
-.d-full { grid-column: 1 / span 2; }
-.d-main { grid-column: 1; justify-self: stretch; }
-.d-gutter {
-  grid-column: 2;
-  position: relative;
-  display: flex;
-  justify-content: center;
-}
-.arrow-cell {
-  position: relative;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.rail-line {
-  width: 2px;
-  background: var(--ink-soft);
-  align-self: stretch;
-}
-.corner-svg { flex-shrink: 0; overflow: visible; }
-.corner-bottom {
-  flex-direction: column;
-  align-items: center;
-}
-.rail-fill { flex: 1; }
-
-.path-label {
-  position: absolute;
-  top: -2px;
-  font-size: 11.5px;
-  font-weight: 700;
-}
-.label-yes { left: 50%; transform: translate(8px, -100%); color: var(--blue); }
-.label-no { left: 0; transform: translateY(-100%); color: var(--ink-soft); }
 
 /* FOOTER */
 .footer {
