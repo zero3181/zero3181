@@ -115,7 +115,6 @@ html, body {
   padding: 22px 20px;
   border: 1.5px solid var(--navy);
 }
-.final .num-badge { margin-bottom: 10px; }
 .final-label {
   font-size: 15.5px;
   font-weight: 700;
@@ -127,26 +126,6 @@ html, body {
   color: var(--ink-soft);
   line-height: 1.6;
   margin: 0;
-}
-
-/* NUMBER BADGE (shown on every step so YES/NO can point at a number
-   instead of a drawn connector line) */
-.num-badge {
-  flex-shrink: 0;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--blue);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 800;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.num-badge-neutral {
-  background: var(--line);
-  color: var(--ink-soft);
 }
 
 /* QUESTION (decision point — visually separated from the clickable
@@ -186,6 +165,7 @@ html, body {
 }
 .q-jump {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   padding-left: 36px;
 }
@@ -194,6 +174,8 @@ html, body {
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 8px;
+  white-space: nowrap;
+  word-break: keep-all;
 }
 .jump-yes { background: var(--navy); color: #fff; }
 .jump-no { background: #fff; color: var(--ink-soft); border: 1px solid var(--q-border); }
@@ -285,7 +267,6 @@ html, body {
 }
 .box-highlight .icon-wrap { background: rgba(255, 255, 255, 0.22); }
 .box-highlight .box-icon { color: #fff; }
-.box-highlight .num-badge { background: #fff; color: var(--accent-dark); }
 .box-highlight::after { color: rgba(255, 255, 255, 0.9); font-weight: 800; }
 
 @keyframes cta-pulse {
