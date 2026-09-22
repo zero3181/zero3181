@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>슈퍼SOL 혜택 플로우차트</title>
+<meta name="description" content="질문 두 개로 찾는 내 슈퍼SOL 웰컴 혜택." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- 아이콘 스프라이트 -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="icon-phone" viewBox="0 0 24 24">
+      <rect x="6" y="2" width="12" height="20" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+      <line x1="10" y1="19" x2="14" y2="19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-ticket" viewBox="0 0 24 24">
+      <path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1.2a1.6 1.6 0 0 0 0 3.2V13.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1.1a1.6 1.6 0 0 0 0-3.2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <line x1="14.5" y1="6.5" x2="14.5" y2="15" stroke="currentColor" stroke-width="1.3" stroke-dasharray="1.6 1.8"/>
+    </symbol>
+    <symbol id="icon-card" viewBox="0 0 24 24">
+      <rect x="2.5" y="5" width="19" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+      <line x1="2.5" y1="9.5" x2="21.5" y2="9.5" stroke="currentColor" stroke-width="1.7"/>
+      <line x1="5.5" y1="14.5" x2="10.5" y2="14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-coin" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/>
+      <text x="12" y="16.2" text-anchor="middle" font-size="11" fill="currentColor" stroke="none" font-family="Gaegu, sans-serif">P</text>
+    </symbol>
+    <symbol id="icon-car" viewBox="0 0 24 24">
+      <path d="M3.5 15.5 5 10.2c.3-1 1.2-1.7 2.3-1.7h9.4c1.1 0 2 .7 2.3 1.7l1.5 5.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <rect x="2.3" y="15.3" width="19.4" height="3.4" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="7" cy="19" r="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="17" cy="19" r="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="7.5" y1="11.3" x2="16.5" y2="11.3" stroke="currentColor" stroke-width="1.3"/>
+    </symbol>
+    <symbol id="icon-flag" viewBox="0 0 24 24">
+      <line x1="5" y1="3" x2="5" y2="21" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <path d="M5 4.2c3-1.4 4.6.9 8 0 2-.5 3 .2 3 .2v8s-1-.7-3-.2c-3.4.9-5-1.4-8 0z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="page">
+  <header class="hero">
+    <p class="hero-eyebrow">HOW TO / 슈퍼SOL 혜택 찾기</p>
+    <h1>질문 두 개로<br>찾는 내 혜택</h1>
+  </header>
+
+  <div class="chart">
+
+    <div class="node start">이벤트 시작</div>
+    <div class="arrow"></div>
+
+    <div class="node diamond"><span class="diamond-label">슈퍼SOL이<br>처음인가요?</span></div>
+
+    <div class="split">
+      <div class="split-line">
+        <span class="tag tag-yes">YES</span>
+        <span class="line-to-branch"></span>
+      </div>
+      <div class="branch">
+        <a class="node box" data-link="appInstall">
+          <svg class="box-icon"><use href="#icon-phone"/></svg>
+          슈퍼SOL 설치하기
+        </a>
+        <div class="arrow small"></div>
+        <a class="node box" data-link="superSolSignup">
+          <svg class="box-icon"><use href="#icon-coin"/></svg>
+          네이버포인트 1만원 받기
+        </a>
+      </div>
+    </div>
+
+    <div class="tag tag-no">NO ↓ 계속 진행</div>
+    <div class="arrow"></div>
+
+    <div class="node group">
+      <p class="group-label">SOL LINK 고객이라면</p>
+      <a class="node box" data-link="oliveYoung">
+        <svg class="box-icon"><use href="#icon-card"/></svg>
+        올리브영 통장으로 SOL LINK 개설
+      </a>
+      <div class="arrow small"></div>
+      <a class="node box" data-link="oliveYoung">
+        <svg class="box-icon"><use href="#icon-ticket"/></svg>
+        올리브영 1만원 쿠폰 받기
+      </a>
+      <div class="arrow small"></div>
+      <a class="node box" data-link="solLinkBonus">
+        <svg class="box-icon"><use href="#icon-coin"/></svg>
+        3천원~100만원 포인트 받기
+      </a>
+    </div>
+
+    <div class="arrow"></div>
+    <div class="node diamond"><span class="diamond-label">신한투자증권,<br>처음인가요?</span></div>
+
+    <div class="split">
+      <div class="split-line">
+        <span class="tag tag-yes">YES</span>
+        <span class="line-to-branch"></span>
+      </div>
+      <div class="branch">
+        <a class="node box" data-link="teslaEvent">
+          <svg class="box-icon"><use href="#icon-ticket"/></svg>
+          투자쿠폰 2만원 받기
+        </a>
+        <div class="arrow small"></div>
+        <a class="node box" data-link="teslaEvent">
+          <svg class="box-icon"><use href="#icon-car"/></svg>
+          테슬라 응모하기
+        </a>
+      </div>
+    </div>
+
+    <div class="tag tag-no">NO ↓ 계속 진행</div>
+    <div class="arrow"></div>
+
+    <div class="node final">
+      <svg class="box-icon final-icon"><use href="#icon-flag"/></svg>
+      <p class="dday" id="dday">D-</p>
+      <p class="final-label">이벤트 종료 9.30까지</p>
+      <p class="final-note">조기 마감될 수 있으니<br>각 이벤트 링크에서 정확한 기간을 확인하세요</p>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <p>본 페이지는 안내 목적의 홍보용 페이지입니다.</p>
+  </footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
