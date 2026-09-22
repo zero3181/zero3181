@@ -1,0 +1,331 @@
+:root {
+  --bg: #eef1f8;
+  --card: #ffffff;
+  --ink: #12141c;
+  --ink-soft: #6b7280;
+  --line: #e2e5ea;
+
+  /* informational blue — icons, step numbers, links */
+  --blue: #1258ff;
+  --blue-soft: #eaf0ff;
+
+  /* navy — headers, question nodes, structure */
+  --navy: #0a1a4a;
+  --q-bg: #e8ecf7;
+  --q-border: #c3cbe4;
+
+  /* accent — reserved for the two install/signup CTAs only */
+  --accent: #ff6a3d;
+  --accent-dark: #db4a1f;
+  --accent-soft: #fff0e8;
+
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 20px 56px;
+}
+
+/* HERO */
+.hero {
+  text-align: center;
+  padding: 40px 10px 6px;
+}
+
+.dday-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--navy);
+  border-radius: 999px;
+}
+.dday-icon {
+  width: 16px;
+  height: 16px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.dday {
+  font-size: 19px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+.dday-sub {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* CHART */
+.chart {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 14px;
+}
+
+.node {
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  border-radius: var(--radius);
+  text-align: left;
+  box-shadow: 0 1px 2px rgba(16, 20, 30, 0.04);
+}
+
+.start {
+  padding: 14px 16px;
+  border-color: var(--line);
+}
+.start-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+.start-note {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue);
+  margin: 0;
+}
+
+.final {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 22px 20px;
+  border: 1.5px solid var(--navy);
+}
+.final .num-badge { margin-bottom: 10px; }
+.final-label {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0 0 8px;
+}
+.final-note {
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* NUMBER BADGE (shown on every step so YES/NO can point at a number
+   instead of a drawn connector line) */
+.num-badge {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.num-badge-neutral {
+  background: var(--line);
+  color: var(--ink-soft);
+}
+
+/* QUESTION (decision point — visually separated from the clickable
+   benefit boxes: tinted navy card, dashed edge, "Q" badge, no chevron) */
+.question {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  text-align: left;
+  background: var(--q-bg);
+  border: 1.5px dashed var(--q-border);
+  box-shadow: none;
+}
+.q-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.q-badge {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.q-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.q-jump {
+  display: flex;
+  gap: 8px;
+  padding-left: 36px;
+}
+.jump {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+.jump-yes { background: var(--navy); color: #fff; }
+.jump-no { background: #fff; color: var(--ink-soft); border: 1px solid var(--q-border); }
+
+/* ARROWS */
+.arrow {
+  align-self: center;
+  width: 2px;
+  height: 26px;
+  background: var(--line);
+  margin: 0 auto;
+  position: relative;
+}
+.arrow::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--ink-soft);
+}
+.arrow.small { height: 14px; }
+
+/* BOX (clickable benefit — reward/coupon/point steps) */
+.box {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+.box:active { transform: scale(0.98); }
+
+.icon-wrap {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--blue-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.box-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--blue);
+}
+.box::after {
+  content: '›';
+  margin-left: auto;
+  padding-left: 8px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
+
+.box.link-missing {
+  border-style: dashed;
+  border-color: var(--ink-soft);
+  opacity: 0.7;
+}
+
+/* HIGHLIGHT — the two install/signup steps (2, 4) that should be the
+   single most-clickable thing on the page: warm accent color no other
+   element uses, stronger elevation, a subtle attention pulse, and a
+   corner tag calling out why. */
+.box-highlight {
+  position: relative;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  border: 2px solid var(--accent-dark);
+  color: #fff;
+  font-weight: 800;
+  font-size: 15.5px;
+  padding: 17px 18px;
+  box-shadow: 0 8px 20px rgba(219, 74, 31, 0.32), 0 2px 6px rgba(219, 74, 31, 0.22);
+  animation: cta-pulse 2.4s ease-in-out infinite;
+}
+.box-highlight .icon-wrap { background: rgba(255, 255, 255, 0.22); }
+.box-highlight .box-icon { color: #fff; }
+.box-highlight .num-badge { background: #fff; color: var(--accent-dark); }
+.box-highlight::after { color: rgba(255, 255, 255, 0.9); font-weight: 800; }
+
+.cta-tag {
+  position: absolute;
+  top: -11px;
+  right: 16px;
+  background: #fff;
+  color: var(--accent-dark);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(219, 74, 31, 0.35);
+  letter-spacing: -0.01em;
+}
+
+@keyframes cta-pulse {
+  0%, 100% {
+    box-shadow: 0 8px 20px rgba(219, 74, 31, 0.32), 0 0 0 0 rgba(255, 106, 61, 0.4);
+  }
+  50% {
+    box-shadow: 0 8px 20px rgba(219, 74, 31, 0.32), 0 0 0 8px rgba(255, 106, 61, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .box-highlight { animation: none; }
+}
+
+/* GROUP BOX (contains several stacked boxes) */
+.group {
+  padding: 16px 14px 14px;
+  display: flex;
+  flex-direction: column;
+}
+.group-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  margin: 0 0 10px;
+}
+
+/* FOOTER */
+.footer {
+  text-align: center;
+  padding: 30px 10px 0;
+  font-size: 12px;
+  color: var(--ink-soft);
+}

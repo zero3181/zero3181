@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>슈퍼SOL 혜택 플로우차트</title>
+<meta name="description" content="질문 두 개로 찾는 내 슈퍼SOL 웰컴 혜택." />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- 아이콘 스프라이트 -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="icon-phone" viewBox="0 0 24 24">
+      <rect x="6" y="2" width="12" height="20" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+      <line x1="10" y1="19" x2="14" y2="19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-ticket" viewBox="0 0 24 24">
+      <path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1.2a1.6 1.6 0 0 0 0 3.2V13.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1.1a1.6 1.6 0 0 0 0-3.2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <line x1="14.5" y1="6.5" x2="14.5" y2="15" stroke="currentColor" stroke-width="1.3" stroke-dasharray="1.6 1.8"/>
+    </symbol>
+    <symbol id="icon-card" viewBox="0 0 24 24">
+      <rect x="2.5" y="5" width="19" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+      <line x1="2.5" y1="9.5" x2="21.5" y2="9.5" stroke="currentColor" stroke-width="1.7"/>
+      <line x1="5.5" y1="14.5" x2="10.5" y2="14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-coin" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/>
+      <text x="12" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" stroke="none" font-family="Pretendard, sans-serif">P</text>
+    </symbol>
+    <symbol id="icon-car" viewBox="0 0 24 24">
+      <path d="M3.5 15.5 5 10.2c.3-1 1.2-1.7 2.3-1.7h9.4c1.1 0 2 .7 2.3 1.7l1.5 5.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <rect x="2.3" y="15.3" width="19.4" height="3.4" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="7" cy="19" r="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="17" cy="19" r="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="7.5" y1="11.3" x2="16.5" y2="11.3" stroke="currentColor" stroke-width="1.3"/>
+    </symbol>
+    <symbol id="icon-flag" viewBox="0 0 24 24">
+      <line x1="5" y1="3" x2="5" y2="21" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <path d="M5 4.2c3-1.4 4.6.9 8 0 2-.5 3 .2 3 .2v8s-1-.7-3-.2c-3.4.9-5-1.4-8 0z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="page">
+  <header class="hero">
+    <div class="dday-badge">
+      <svg class="dday-icon"><use href="#icon-flag"/></svg>
+      <span class="dday" id="dday">D-</span>
+      <span class="dday-sub">이벤트 종료 9.30까지</span>
+    </div>
+  </header>
+
+  <div class="chart">
+
+    <div class="node start">
+      <p class="start-title">이벤트 시작</p>
+      <p class="start-note">2만 3천원 확정지급 + 최대 100만원 · 테슬라 추첨</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="node question">
+      <div class="q-row">
+        <span class="q-badge">Q</span>
+        <span class="q-text">슈퍼SOL이 처음인가요?</span>
+      </div>
+      <div class="q-jump">
+        <span class="jump jump-yes">YES → 2번</span>
+        <span class="jump jump-no">NO → 4번</span>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="node group">
+      <p class="group-label">슈퍼SOL이 처음이라면</p>
+      <a class="node box box-highlight" data-link="appInstall">
+        <span class="cta-tag">먼저 하세요</span>
+        <span class="num-badge">2</span>
+        <span class="icon-wrap"><svg class="box-icon"><use href="#icon-phone"/></svg></span>
+        이벤트 대상 확인 후 설치하기
+      </a>
+      <div class="arrow small"></div>
+      <a class="node box" data-link="superSolSignup">
+        <span class="num-badge">3</span>
+        <span class="icon-wrap"><svg class="box-icon"><use href="#icon-coin"/></svg></span>
+        네이버포인트 1만원 받기
+      </a>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="node group">
+      <p class="group-label">슈퍼SOL 고객이라면</p>
+      <a class="node box box-highlight" data-link="oliveYoung">
+        <span class="cta-tag">먼저 하세요</span>
+        <span class="num-badge">4</span>
+        <span class="icon-wrap"><svg class="box-icon"><use href="#icon-card"/></svg></span>
+        올리브영 통장으로 SOL LINK 개설
+      </a>
+      <div class="arrow small"></div>
+      <a class="node box" data-link="oliveYoung">
+        <span class="num-badge">5</span>
+        <span class="icon-wrap"><svg class="box-icon"><use href="#icon-ticket"/></svg></span>
+        올리브영 1만원 쿠폰 받기
+      </a>
+      <div class="arrow small"></div>
+      <a class="node box" data-link="solLinkBonus">
+        <span class="num-badge">6</span>
+        <span class="icon-wrap"><svg class="box-icon"><use href="#icon-coin"/></svg></span>
+        3천원~100만원 포인트 받기
+      </a>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="node question">
+      <div class="q-row">
+        <span class="q-badge">Q</span>
+        <span class="q-text">신한투자증권이 처음인가요?</span>
+      </div>
+      <div class="q-jump">
+        <span class="jump jump-yes">YES → 8번</span>
+        <span class="jump jump-no">NO → 10번</span>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <a class="node box" data-link="teslaEvent">
+      <span class="num-badge">8</span>
+      <span class="icon-wrap"><svg class="box-icon"><use href="#icon-ticket"/></svg></span>
+      투자쿠폰 2만원 받기
+    </a>
+    <div class="arrow small"></div>
+
+    <a class="node box" data-link="teslaEvent">
+      <span class="num-badge">9</span>
+      <span class="icon-wrap"><svg class="box-icon"><use href="#icon-car"/></svg></span>
+      테슬라 응모하기
+    </a>
+    <div class="arrow"></div>
+
+    <div class="node final">
+      <span class="num-badge num-badge-neutral">10</span>
+      <p class="final-label">모든 혜택 확인 완료!</p>
+      <p class="final-note">조기 마감될 수 있으니<br>각 이벤트 링크에서 정확한 기간을 확인하세요</p>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <p>본 페이지는 안내 목적의 홍보용 페이지입니다.</p>
+  </footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
