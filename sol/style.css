@@ -15,9 +15,9 @@
   --q-border: #c3cbe4;
 
   /* accent — reserved for the two install/signup CTAs only */
-  --accent: #ff6a3d;
-  --accent-dark: #db4a1f;
-  --accent-soft: #fff0e8;
+  --accent: #0060ff;
+  --accent-dark: #0026a3;
+  --accent-soft: #e4ecff;
 
   --radius: 14px;
 }
@@ -264,9 +264,10 @@ html, body {
 }
 
 /* HIGHLIGHT — the two install/signup steps (2, 4) that should be the
-   single most-clickable thing on the page: warm accent color no other
-   element uses, stronger elevation, a subtle attention pulse, and a
-   corner tag calling out why. */
+   single most-clickable thing on the page: a vivid, saturated blue no
+   other element on the page is filled with (icons/badges elsewhere are
+   only small blue accents on white), stronger elevation, and a subtle
+   attention pulse. */
 .box-highlight {
   position: relative;
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
@@ -275,7 +276,7 @@ html, body {
   font-weight: 800;
   font-size: 15.5px;
   padding: 17px 18px;
-  box-shadow: 0 8px 20px rgba(219, 74, 31, 0.32), 0 2px 6px rgba(219, 74, 31, 0.22);
+  box-shadow: 0 8px 20px rgba(0, 96, 255, 0.35), 0 2px 6px rgba(0, 38, 163, 0.25);
   animation: cta-pulse 2.4s ease-in-out infinite;
 }
 .box-highlight .icon-wrap { background: rgba(255, 255, 255, 0.22); }
@@ -283,26 +284,12 @@ html, body {
 .box-highlight .num-badge { background: #fff; color: var(--accent-dark); }
 .box-highlight::after { color: rgba(255, 255, 255, 0.9); font-weight: 800; }
 
-.cta-tag {
-  position: absolute;
-  top: -11px;
-  right: 16px;
-  background: #fff;
-  color: var(--accent-dark);
-  font-size: 11px;
-  font-weight: 800;
-  padding: 3px 10px;
-  border-radius: 999px;
-  box-shadow: 0 2px 6px rgba(219, 74, 31, 0.35);
-  letter-spacing: -0.01em;
-}
-
 @keyframes cta-pulse {
   0%, 100% {
-    box-shadow: 0 8px 20px rgba(219, 74, 31, 0.32), 0 0 0 0 rgba(255, 106, 61, 0.4);
+    box-shadow: 0 8px 20px rgba(0, 96, 255, 0.35), 0 0 0 0 rgba(0, 96, 255, 0.4);
   }
   50% {
-    box-shadow: 0 8px 20px rgba(219, 74, 31, 0.32), 0 0 0 8px rgba(255, 106, 61, 0);
+    box-shadow: 0 8px 20px rgba(0, 96, 255, 0.35), 0 0 0 8px rgba(0, 96, 255, 0);
   }
 }
 @media (prefers-reduced-motion: reduce) {
