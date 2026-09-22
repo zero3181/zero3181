@@ -217,25 +217,12 @@ html, body {
 
 /* HIGHLIGHT (the links that actually drive signups) */
 .box-highlight {
-  position: relative;
-  background: var(--blue-soft);
+  background: #dbe6ff;
   border: 2px solid var(--blue);
   font-weight: 700;
   box-shadow: 0 3px 10px rgba(18, 88, 255, 0.18);
 }
 .box-highlight .num-badge { background: var(--navy); }
-.highlight-tag {
-  position: absolute;
-  top: -10px;
-  right: 12px;
-  background: var(--navy);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 3px 9px;
-  border-radius: 999px;
-  letter-spacing: 0.02em;
-}
 
 /* GROUP BOX (contains several stacked boxes) */
 .group {
