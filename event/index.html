@@ -3,104 +3,215 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>슈퍼SOL 웰컴 이벤트</title>
-<meta name="description" content="슈퍼SOL 설치와 SOL LINK 가입으로 받는 웰컴 혜택." />
+<title>슈퍼SOL 웰컴 이벤트 | 신한 SOL LINK</title>
+<meta name="description" content="슈퍼SOL 앱 설치와 신한 SOL LINK 가입만으로 받는 웰컴 혜택 모음. 네이버페이 포인트, 투자쿠폰, 테슬라 추첨, 올리브영 혜택까지 한번에 확인하세요." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <div class="page">
 
+  <!-- 상단 안내 바 -->
+  <div class="notice-bar">이벤트별 기간·대상이 달라요</div>
+
   <!-- HERO -->
-  <section class="hero">
-    <img class="bg" src="assets/hero-gift.webp" alt="" aria-hidden="true" />
-    <div class="scrim scrim-hero"></div>
-    <div class="copy">
-      <p class="kicker">SUPERSOL WELCOME</p>
-      <h1>슈퍼SOL</h1>
-      <p class="tagline">설치하고, 혜택 받기</p>
-      <a class="pill pill-light" data-link="appInstall" href="#">앱 설치하기</a>
+  <header class="hero">
+    <img class="hero-bg" src="assets/hero-gift.webp" alt="" aria-hidden="true" />
+    <div class="hero-scrim"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">SUPERSOL WELCOME</p>
+      <h1>슈퍼SOL<br>웰컴 혜택</h1>
+      <p class="hero-sub">포인트부터 테슬라까지</p>
+      <a class="btn btn-primary btn-lg" data-link="appInstall" href="#">
+        앱 설치하기
+      </a>
+      <p class="hero-hint">혜택은 아래에서 확인 ↓</p>
+    </div>
+  </header>
+
+  <!-- 유형 선택 -->
+  <section class="section" id="finder">
+    <h2 class="section-title">나는 어떤 경우인가요?</h2>
+
+    <div class="finder-cards">
+      <a class="finder-card" href="#step1">
+        <img class="finder-icon" src="assets/icon-bear.webp" alt="" aria-hidden="true" />
+        <div class="finder-body">
+          <span class="finder-badge badge-purple">STEP 1</span>
+          <strong>슈퍼SOL, 처음 써봐요</strong>
+          <span class="finder-desc">신한은행 거래가 없던 분</span>
+          <span class="finder-reward">네이버페이 1만P</span>
+        </div>
+      </a>
+      <a class="finder-card" href="#step2">
+        <img class="finder-icon" src="assets/icon-coin.webp" alt="" aria-hidden="true" />
+        <div class="finder-body">
+          <span class="finder-badge badge-blue">STEP 2</span>
+          <strong>SOL LINK 가입할래요</strong>
+          <span class="finder-desc">신한은행 기존·신규 고객</span>
+          <span class="finder-reward">최대 100만원 + 올리브영 11만원</span>
+        </div>
+      </a>
+      <a class="finder-card" href="#step3">
+        <img class="finder-icon" src="assets/icon-tesla.webp" alt="" aria-hidden="true" />
+        <div class="finder-body">
+          <span class="finder-badge badge-navy">STEP 3</span>
+          <strong>신한투자증권, 처음이에요</strong>
+          <span class="finder-desc">신규·휴면 투자자</span>
+          <span class="finder-reward">테슬라 추첨 + 투자쿠폰</span>
+        </div>
+      </a>
     </div>
   </section>
 
-  <!-- 점프 네비 -->
-  <nav class="jumpnav">
-    <a href="#o-npay"><img src="assets/icon-bear.webp" alt="" /><span>슈퍼SOL</span></a>
-    <a href="#o-sollink"><img src="assets/icon-coin.webp" alt="" /><span>SOL LINK</span></a>
-    <a href="#o-tesla"><img src="assets/icon-tesla.webp" alt="" /><span>증권계좌</span></a>
-  </nav>
+  <!-- STEP 1 : 슈퍼SOL 신규가입 -->
+  <section class="section persona persona-purple" id="step1">
+    <div class="persona-head">
+      <span class="persona-num">STEP 1</span>
+      <h2>신한은행이 처음이라면</h2>
+      <p><strong>네이버페이 1만원</strong></p>
+    </div>
 
-  <!-- 1. 슈퍼SOL 신규가입 -->
-  <section class="offer offer-cover" id="o-npay" style="background-image:url('assets/bear-npay.webp')">
-    <div class="scrim"></div>
-    <div class="copy">
-      <p class="kicker">슈퍼SOL 신규가입</p>
-      <h2>네이버페이<br>1만P</h2>
-      <a class="pill" data-link="superSolSignup" href="#">받으러 가기</a>
+    <img class="persona-banner" src="assets/bear-npay.webp" alt="슈퍼SOL 신규가입 네이버페이 1만 포인트" />
+
+    <div class="benefit-card">
+      <span class="benefit-tag">신규가입 혜택</span>
+      <img class="benefit-visual" src="assets/npay-card.webp" alt="네이버페이 10,000P 쿠폰" />
+      <ul class="steps">
+        <li><b>STEP 1.</b> 앱 설치 후 회원가입</li>
+        <li><b>STEP 2.</b> 가입 후 <b>7일 이내</b> 쿠폰 다운로드</li>
+      </ul>
+      <a class="btn btn-block btn-purple" data-link="superSolSignup" href="#">포인트 받기</a>
+      <details class="fine-print">
+        <summary>유의사항 보기</summary>
+        <ul>
+          <li>슈퍼SOL을 처음 이용하는 고객 대상, 선착순 10만 명 한정</li>
+          <li>기존 SOL뱅크 이용 고객은 대상에서 제외돼요</li>
+          <li>이벤트 기간: 2026.08.28(금) ~ 2026.09.30(수)</li>
+        </ul>
+      </details>
     </div>
   </section>
 
-  <!-- 2. SOL LINK 보유 고객 확정 포인트 -->
-  <section class="offer offer-card offer-tint-light" id="o-sollink">
-    <div class="copy">
-      <p class="kicker">SOL LINK만 있으면, 누구나</p>
-      <h2>최대<br>100만원</h2>
-      <a class="pill pill-dark" data-link="solLinkBonus" href="#">지금 받기</a>
+  <!-- STEP 2 : SOL LINK 가입 -->
+  <section class="section persona persona-blue" id="step2">
+    <div class="persona-head">
+      <span class="persona-num">STEP 2</span>
+      <h2>신한은행 고객이거나<br>막 가입했다면</h2>
+      <p><strong>SOL LINK</strong> 하나로 받는 혜택</p>
     </div>
-    <img class="prod" src="assets/coin-voucher.webp" alt="마이신한포인트 · 땡겨요쿠폰" />
+
+    <div class="benefit-card">
+      <span class="benefit-tag">SOL LINK 보유 고객 전체</span>
+      <img class="benefit-visual benefit-visual-light" src="assets/coin-voucher.webp" alt="마이신한포인트 또는 땡겨요쿠폰" />
+      <p class="benefit-amount-line">3,000원 ~ 100만원</p>
+      <p class="benefit-desc">버튼 한 번, 100% 당첨</p>
+      <a class="btn btn-block btn-blue" data-link="solLinkBonus" href="#">지금 받기</a>
+      <details class="fine-print">
+        <summary>유의사항 보기</summary>
+        <ul>
+          <li>SOL LINK 보유 고객 전체 대상</li>
+          <li>이벤트 기간: 2026.07.01 ~ 09.30 (예산 소진 시 조기 종료될 수 있어요)</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="benefit-card">
+      <span class="benefit-tag">랜덤 포인트 뽑기</span>
+      <img class="benefit-visual" src="assets/bear-gacha.webp" alt="랜덤 포인트 뽑기, 마이신한포인트 최대 10만P" />
+      <p class="benefit-amount-line">마이신한포인트 최대 100,000P</p>
+      <p class="benefit-desc">1,000P ~ 10만P, 100% 당첨</p>
+      <a class="btn btn-block btn-blue" data-link="randomPoint" href="#">뽑으러 가기</a>
+      <details class="fine-print">
+        <summary>유의사항 보기</summary>
+        <ul>
+          <li>SOL LINK 계좌 보유 고객 대상 (만 19세 미만, 외국인 제외)</li>
+          <li>신한투자증권 마케팅 수신 동의 필요</li>
+          <li>이벤트 기간: 2026.09.14 ~ 11.30</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="benefit-card">
+      <span class="benefit-tag">올리브영 SOL통장 X SOL LINK</span>
+      <img class="benefit-visual" src="assets/oy-mascots.webp" alt="올리브영 SOL통장 X SOL LINK 연결 이벤트" />
+      <p class="benefit-amount-line">최대 110,000원</p>
+      <ul class="steps">
+        <li><b>가입 즉시</b> 올리브영 상품권 1만원</li>
+        <li><b>월간 혜택</b> 최대 6만원 (1년)</li>
+        <li><b>스페셜 혜택</b> 최대 4만원 (1년)</li>
+      </ul>
+      <a class="btn btn-block btn-blue" data-link="oliveYoung" href="#">만들러 가기</a>
+      <details class="fine-print">
+        <summary>유의사항 보기</summary>
+        <ul>
+          <li>월간 혜택: 전월 5천원 이상 결제 + 마케팅 동의 시 매달 5천원</li>
+          <li>스페셜 혜택: 월간 혜택 3회 받는 날마다 1만원 추가 쿠폰</li>
+          <li>2026.08.27 이후 올리브영 SOL통장(신한 SOL LINK) 최초 가입 고객, 또는 기존 보유 고객 중 SOL LINK 연결 고객</li>
+          <li>SOL LINK 연결 시 증권계좌가 새로 개설되며, 개설 후 20영업일간 다른 은행·증권계좌 신규 개설이 제한돼요</li>
+          <li>이벤트 기간: 2026.09.02 ~ 12.31 (또는 판매한도 소진 시 조기 종료)</li>
+        </ul>
+      </details>
+    </div>
+
+    <a class="btn btn-block btn-outline" data-link="soLinkSignup" href="#">SOL LINK 개설하기</a>
   </section>
 
-  <!-- 3. 랜덤 포인트 뽑기 -->
-  <section class="offer offer-cover" id="o-random" style="background-image:url('assets/bear-gacha.webp')">
-    <div class="scrim"></div>
-    <div class="copy">
-      <p class="kicker">랜덤 포인트 뽑기</p>
-      <h2>최대<br>10만P</h2>
-      <a class="pill" data-link="randomPoint" href="#">뽑으러 가기</a>
+  <!-- STEP 3 : 신한투자증권 최초거래 -->
+  <section class="section persona persona-navy" id="step3">
+    <div class="persona-head">
+      <span class="persona-num">STEP 3</span>
+      <h2>신한투자증권이<br>처음 · 오랜만이라면</h2>
+      <p><strong>테슬라 추첨 + 투자쿠폰</strong></p>
+    </div>
+
+    <div class="benefit-card benefit-dark">
+      <span class="benefit-tag">혜택 1</span>
+      <img class="benefit-visual benefit-visual-dark" src="assets/tesla-car.webp" alt="매주 1대 추첨 테슬라" />
+      <p class="benefit-amount-line">매주 1대 추첨, 테슬라</p>
+      <p class="benefit-desc">매주 거래하면 자동 응모</p>
+    </div>
+
+    <div class="benefit-card benefit-dark">
+      <span class="benefit-tag">혜택 2</span>
+      <img class="benefit-visual benefit-visual-dark" src="assets/coupon-card.webp" alt="무조건 받는 투자쿠폰" />
+      <p class="benefit-amount-line">무조건 받는 투자쿠폰</p>
+      <p class="benefit-desc">신규 2만원 · 휴면 1.5만원, 즉시 발급</p>
+      <a class="btn btn-block btn-navy" data-link="teslaEvent" href="#">쿠폰 받고 응모하기</a>
+      <details class="fine-print">
+        <summary>유의사항 보기</summary>
+        <ul>
+          <li>테슬라 추첨: 매주 100만원 이상 국내주식 거래 + 잔고 유지 시 자동 응모</li>
+          <li>투자쿠폰: 신청 즉시 발급, 30일 이내 사용</li>
+          <li>신한 SOL LINK 계좌를 만든 신한투자증권 신규·휴면 고객 대상</li>
+          <li>만 19세 이상 개인 및 내국인 대상, 슈퍼SOL 이용 및 마케팅 동의 필수</li>
+          <li>이벤트 기간: 2026.07.01(수) ~ 09.30(수)</li>
+        </ul>
+      </details>
     </div>
   </section>
 
-  <!-- 4. 올리브영 SOL통장 -->
-  <section class="offer offer-cover offer-tint-light" id="o-oy" style="background-image:url('assets/oy-mascots.webp')">
-    <div class="scrim scrim-light"></div>
-    <div class="copy copy-dark">
-      <p class="kicker">올리브영 SOL통장 X SOL LINK</p>
-      <h2>최대<br>11만원</h2>
-      <a class="pill pill-dark" data-link="oliveYoung" href="#">만들러 가기</a>
-    </div>
-  </section>
-
-  <!-- 5. 테슬라 -->
-  <section class="offer offer-cover" id="o-tesla" style="background-image:url('assets/tesla-car.webp')">
-    <div class="scrim"></div>
-    <div class="copy">
-      <p class="kicker">매주 1대 추첨</p>
-      <h2>테슬라</h2>
-      <a class="pill" data-link="teslaEvent" href="#">응모하기</a>
-    </div>
-  </section>
-
-  <!-- 6. 투자쿠폰 -->
-  <section class="offer offer-card offer-tint-dark">
-    <div class="copy">
-      <p class="kicker">가입만 해도 무조건</p>
-      <h2>투자쿠폰<br>2만원</h2>
-      <a class="pill" data-link="teslaEvent" href="#">받으러 가기</a>
-    </div>
-    <img class="prod" src="assets/coupon-card.webp" alt="투자쿠폰 2만원" />
+  <!-- 공통 유의사항 -->
+  <section class="section notice">
+    <h2 class="section-title-sm">꼭 확인해주세요</h2>
+    <ul class="notice-list">
+      <li>정확한 지급 조건은 각 이벤트 페이지·약관 기준</li>
+      <li>참여 전 대상·기간을 다시 확인해주세요</li>
+      <li>예산·한도 소진 시 조기 종료될 수 있어요</li>
+    </ul>
   </section>
 
   <footer class="footer">
-    <a class="pill pill-outline" data-link="soLinkSignup" href="#">SOL LINK 개설하기</a>
-    <p class="fine">이벤트별 대상·기간은 각 페이지에서 확인하세요.</p>
+    <p>본 페이지는 안내 목적의 홍보용 페이지입니다.</p>
   </footer>
 </div>
 
+<!-- 하단 고정 CTA -->
 <div class="sticky-cta">
-  <a class="pill pill-block" data-link="appInstall" href="#">슈퍼SOL 시작하기</a>
+  <a class="btn btn-primary btn-block" data-link="appInstall" href="#">슈퍼SOL 시작하기</a>
 </div>
 
 <script src="script.js"></script>
