@@ -98,9 +98,13 @@ html, body {
   margin: 0 0 4px;
 }
 .start-note {
-  font-size: 13px;
-  font-weight: 600;
+  display: inline-block;
+  font-size: 15px;
+  font-weight: 800;
   color: var(--blue);
+  background: var(--blue-soft);
+  padding: 5px 10px;
+  border-radius: 8px;
   margin: 0;
 }
 
