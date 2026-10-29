@@ -1,0 +1,16 @@
+# Synology Container Manager > 프로젝트 > 생성 에서 이 폴더를 선택하면 이 파일을 사용합니다.
+services:
+  ai-debate:
+    build: .
+    image: ai-debate:latest
+    container_name: ai-debate
+    restart: unless-stopped
+    ports:
+      - "8790:8790"   # 브라우저에서 http://NAS주소:8790
+    env_file:
+      - settings.env  # 비밀번호와 API 키 (settings.env.example 을 복사해서 만드세요)
+    volumes:
+      - ai-debate-data:/data   # 토론 기록 (컨테이너를 지워도 남음)
+
+volumes:
+  ai-debate-data:

@@ -17,6 +17,12 @@ human who can step in. 2 AI seats → 1:1; 3 or more → multi-party (speaking t
 
 Python 3.10+ standard library only. No install step.
 
+## Run it on a Synology NAS (always on, use from a phone)
+
+Step-by-step guide in Korean: [docs/nas-setup.md](docs/nas-setup.md). It runs `runner.py`
+(a password-protected web page: type a topic, press 시작, watch the debate live) in Docker
+via Container Manager.
+
 ## Easiest: one command (Gemini vs Claude)
 
 ```bash
@@ -29,7 +35,8 @@ Needs Python 3.10+ and the `claude` CLI logged in. It starts its own board serve
 Gemini API seat and a Claude Code seat, posts the topic, prints the debate live, and saves
 `transcript.json` + `verify.txt` under `results/<time>/`. When both AIs only say "nothing to
 add", it posts a moderator question (`--followup` to set your own, `--no-followup` to turn off).
-Default is 30 AI messages (15 Gemini calls; the Gemini free tier allows 20 per model per day).
+Default is 15 AI messages per participant (the Gemini free tier allows 20 calls per model per day).
+`--seats chatgpt,gemini,claude` runs a 3-way debate (needs `OPENAI_API_KEY`).
 Change the Gemini model with `--gemini-model`. Tested on Linux only.
 
 ## Quick start (manual)

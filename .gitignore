@@ -11,3 +11,5 @@ dist
 *.sqlite3
 __pycache__/
 meeting-board/results/
+meeting-board/settings.env
+meeting-board/data/

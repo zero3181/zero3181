@@ -73,6 +73,30 @@ class SeatTest(unittest.TestCase):
         roles = [m["role"] for m in SEEN[0]["body"]["messages"]]
         self.assertEqual(roles, ["system", "user"])
 
+    def test_claude_seat_resumes_session_after_failed_first_call(self):
+        import tempfile
+        from seats.adapters import ClaudeCodeSeat
+        d = Path(tempfile.mkdtemp())
+        calls = d / "calls.txt"
+        fake = d / "claude"
+        # Fake CLI: the first call creates the session but fails with an API error.
+        fake.write_text(f"""#!{sys.executable}
+import json, sys
+args = sys.argv[1:]
+open({str(calls)!r}, "a").write(" ".join(a for a in args if a in ("--session-id", "--resume")) + "\\n")
+sid = args[args.index("--session-id") + 1] if "--session-id" in args else args[args.index("--resume") + 1]
+first = "--session-id" in args
+print(json.dumps({{"session_id": sid, "is_error": first, "result": "API Error: overloaded" if first else "ok reply"}}))
+sys.exit(1 if first else 0)
+""")
+        fake.chmod(0o755)
+        seat = ClaudeCodeSeat(None, claude_bin=str(fake))
+        with self.assertRaisesRegex(RuntimeError, "API Error: overloaded"):
+            seat.respond([msg(1, "hi")])
+        r = seat.respond([msg(1, "hi")])
+        self.assertEqual(r.text, "ok reply")
+        self.assertEqual(calls.read_text().split("\n")[:2], ["--session-id", "--resume"])
+
     def test_openai_compatible_requires_base_url_and_custom_vendor(self):
         SEEN.clear()
         seat = APISeat(None, provider="openai-compatible", api_key="k", base_url=self.base,

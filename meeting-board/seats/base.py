@@ -249,11 +249,13 @@ class SeatAdapter:
                         break
                     except Exception as e:
                         self.log(f"[{self.vendor}] model call failed (attempt {attempt + 1}/{MODEL_ATTEMPTS}): {e}")
+                        if any(w in str(e) for w in ("HTTP 401", "HTTP 403", "Failed to authenticate")):
+                            break  # wrong key or token: retrying will not help
                         if attempt + 1 < MODEL_ATTEMPTS:
                             # Vendor rate limits (429) and overload (503) usually clear within a minute.
                             time.sleep(MODEL_BACKOFF[min(attempt, len(MODEL_BACKOFF) - 1)])
                 if reply is None:
-                    raise RuntimeError(f"[{self.vendor}] model failed {MODEL_ATTEMPTS} times; seat leaving")
+                    raise RuntimeError(f"[{self.vendor}] model call failed; seat leaving")
                 if not reply.text.strip():
                     reply.text = "(빈 응답)"
                 try:

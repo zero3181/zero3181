@@ -85,11 +85,17 @@ class ClaudeCodeSeat(SeatAdapter):
         env = {k: v for k, v in os.environ.items() if k not in ("CLAUDECODE",)}
         proc = subprocess.run(cmd, input=prompt, capture_output=True, text=True, timeout=self.timeout,
                               cwd=self.workdir, env=env)
-        if proc.returncode != 0:
-            raise RuntimeError(f"claude exited {proc.returncode}: {proc.stderr[-800:] or proc.stdout[-800:]}")
-        out = json.loads(proc.stdout)
-        if out.get("is_error"):
-            raise RuntimeError(f"claude error: {out.get('result')}")
+        try:
+            out = json.loads(proc.stdout)
+        except ValueError:
+            out = {}
+        # A failed turn (e.g. API error) can still create the session. Later attempts must
+        # then --resume it; --session-id again fails with "already in use".
+        if out.get("session_id") == self.session_id:
+            self.started = True
+        if proc.returncode != 0 or out.get("is_error"):
+            detail = out.get("result") or proc.stderr[-800:] or proc.stdout[-800:]
+            raise RuntimeError(f"claude failed (exit {proc.returncode}): {detail}")
         self.started = True
         reported_sid = out.get("session_id")
         models = list((out.get("modelUsage") or {}).keys())

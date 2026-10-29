@@ -1,0 +1,7 @@
+results/
+data/
+tests/
+evidence/
+settings.env
+**/__pycache__/
+*.sqlite3
