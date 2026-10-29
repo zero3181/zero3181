@@ -133,6 +133,7 @@ def cmd_run_seat(a):
                            model=a.model, session_id=a.session_id)
     else:
         sys.exit("unknown seat kind")
+    seat.role = a.role or ""
     try:
         n = seat.run(max_replies=a.max_replies)
         print(f"seat finished after {n} replies", file=sys.stderr)
@@ -217,6 +218,7 @@ def main():
     p.add_argument("--base-url"); p.add_argument("--key-env", help="env var holding the API key")
     p.add_argument("--bridge", help="command seat: bridge program (stdin=meeting text, stdout=reply)")
     p.add_argument("--session-id")
+    p.add_argument("--role", help="debate role text added to this seat's system prompt")
     p.add_argument("--max-replies", type=int); p.set_defaults(f=cmd_run_seat)
 
     p = sub.add_parser("agent-wait"); p.add_argument("--session-id"); p.add_argument("--vendor-model")

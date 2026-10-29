@@ -46,6 +46,51 @@ DEFAULT_FOLLOWUPS = [
 IDLE_CHARS = 100  # an AI reply shorter than this counts as "nothing more to add"
 PER_SEAT_MESSAGES = 15  # leaves room for >=10 cross-vendor replies even after moderator questions
 
+# Debate roles. The text goes into that AI's own system prompt (not into the shared chat).
+ROLES = {
+    "proposer": ("제안자", "매 차례 구체적인 해결책이나 개선안을 하나 내세요. 앞선 비판을 반영해 수정안을 내도 됩니다."),
+    "checker": ("현실검증", "나온 제안의 비용, 일정, 필요한 사람과 자원, 실행 순서를 따지고, 빠진 전제나 위험을 "
+                         "구체적으로 지적하세요."),
+    "opponent": ("반대자", "악마의 변호인으로서 근거를 들어 반대 입장을 내세요. 상대 논리에 설득되면 그 점은 "
+                        "인정하되, 남아 있는 다른 약점을 새로 찾아 제기하세요. 근거 없는 반대는 하지 마세요."),
+    "synthesizer": ("종합정리", "지금까지 합의된 것, 남은 쟁점, 다음에 따져야 할 질문을 짧게 정리하세요. "
+                             "자기 의견은 최소화하세요."),
+    "pro": ("찬성", "주제에 찬성하는 입장입니다. 토론 끝까지 찬성 입장을 유지하며 근거를 들어 주장하고, 반대 측 "
+                   "논거에 구체적으로 반박하세요. 상대의 타당한 지적은 인정하되 입장은 바꾸지 마세요."),
+    "con": ("반대", "주제에 반대하는 입장입니다. 토론 끝까지 반대 입장을 유지하며 근거를 들어 주장하고, 찬성 측 "
+                   "논거에 구체적으로 반박하세요. 상대의 타당한 지적은 인정하되 입장은 바꾸지 마세요."),
+}
+
+# preset -> (label, roles handed out in speaking order, required participant count or None)
+PRESETS = {
+    "free": ("자유 토론", [], None),
+    "roles": ("역할 분담 (제안·검증·반대·정리)", ["proposer", "checker", "opponent", "synthesizer"], None),
+    "procon1": ("찬반 1:1", ["pro", "con"], 2),
+    "procon2": ("찬반 2:2", ["pro", "con", "pro", "con"], 4),
+}
+# With fewer than 4 AIs, "roles" keeps the most useful ones.
+ROLES_BY_COUNT = {2: ["proposer", "opponent"], 3: ["proposer", "opponent", "synthesizer"]}
+
+
+def assign_roles(kinds: list[str], preset: str, overrides: dict[str, str] | None = None) -> tuple[dict, str]:
+    """Return ({kind: role_key}, error). Preset roles go out in speaking order; overrides win."""
+    if preset not in PRESETS:
+        return {}, f"모르는 토론 방식: {preset}"
+    label, order, need = PRESETS[preset]
+    if need and len(kinds) != need:
+        return {}, f"{label}은(는) AI {need}개를 골라야 합니다 (지금 {len(kinds)}개)."
+    if preset == "roles" and len(kinds) in ROLES_BY_COUNT:
+        order = ROLES_BY_COUNT[len(kinds)]
+    roles = {k: order[i] for i, k in enumerate(kinds) if i < len(order)}
+    for k, r in (overrides or {}).items():
+        if k in kinds and r in ROLES:
+            roles[k] = r
+        elif k in kinds and r == "none":
+            roles.pop(k, None)
+    if preset.startswith("procon") and not {"pro", "con"} <= set(roles.values()):
+        return {}, "찬반 토론에는 찬성과 반대가 각각 1명 이상 있어야 합니다."
+    return roles, ""
+
 _local = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
@@ -141,6 +186,7 @@ class Debate:
     topic: str
     out_dir: Path
     models: dict[str, str] = field(default_factory=dict)
+    roles: dict[str, str] = field(default_factory=dict)  # kind -> ROLES key
     max_messages: int | None = None
     followups: list[str] | None = None
     min_round_trips: int = 10
@@ -157,6 +203,8 @@ class Debate:
     def run(self) -> DebateResult:
         res = DebateResult(out_dir=self.out_dir)
         self.out_dir.mkdir(parents=True, exist_ok=True)
+        (self.out_dir / "roles.json").write_text(json.dumps(
+            {SEAT_TYPES[k]["name"]: ROLES[r][0] for k, r in self.roles.items()}, ensure_ascii=False))
         max_messages = self.max_messages or PER_SEAT_MESSAGES * len(self.kinds)
         followups = list(DEFAULT_FOLLOWUPS if self.followups is None else self.followups)
         procs: dict[str, subprocess.Popen] = {}
@@ -187,6 +235,9 @@ class Debate:
                             "--vendor", t["vendor"], "--key-env", t["keys"][0]]
                 if model:
                     cmd += ["--model", model]
+                if self.roles.get(k):
+                    label, desc = ROLES[self.roles[k]]
+                    cmd += ["--role", f"{label}: {desc}"]
                 logs[t["name"]] = self.out_dir / f"seat-{k}.log"
                 procs[t["name"]] = subprocess.Popen(
                     [sys.executable, str(ROOT / "mb.py"), *cmd], cwd=ROOT,
@@ -197,8 +248,10 @@ class Debate:
 
             self._status("토론 진행 중")
             user = BoardClient(self.base, rid, ut)
-            user.post(f"주제: {self.topic}\n서로의 주장에 구체적으로 반박하거나 보완하면서, "
-                      "각 발언은 4~6문장으로 짧게 해주세요.", None)
+            lineup = ", ".join(f"{SEAT_TYPES[k]['name']}={ROLES[self.roles[k]][0]}"
+                               for k in self.kinds if self.roles.get(k))
+            user.post(f"주제: {self.topic}\n" + (f"역할: {lineup}\n각자 맡은 역할에 맞게 발언하고, " if lineup
+                      else "서로의 주장에 구체적으로 반박하거나 보완하면서, ") + "각 발언은 4~6문장으로 짧게 해주세요.", None)
             timeout_min = self.timeout_min or max(30, 2 * max_messages)
             shown, deadline, failed = 0, time.time() + timeout_min * 60, ""
             while True:

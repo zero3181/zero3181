@@ -21,7 +21,9 @@ Python 3.10+ standard library only. No install step.
 
 Step-by-step guide in Korean: [docs/nas-setup.md](docs/nas-setup.md). It runs `runner.py`
 (a password-protected web page: type a topic, press 시작, watch the debate live) in Docker
-via Container Manager.
+via Container Manager. The start page offers debate modes: free, roles (proposer / reality check /
+opponent / synthesizer), pro-con 1:1 and 2:2; roles go into each AI's own system prompt. Wrong passwords
+are rate limited, so the page can sit behind the NAS reverse proxy with HTTPS (see the guide).
 
 ## Easiest: one command (Gemini vs Claude)
 

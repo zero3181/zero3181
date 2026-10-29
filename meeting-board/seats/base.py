@@ -152,6 +152,10 @@ class SeatAdapter:
 
     vendor: str = "unknown"
     transport: str = "unknown"
+    role: str = ""  # debate role set by the operator (e.g. "찬성"), added to the system prompt
+
+    def system_prompt(self) -> str:
+        return MEETING_SYSTEM_PROMPT + (f"\n\n[이 회의에서 당신의 역할]\n{self.role}" if self.role else "")
 
     def __init__(self, board: BoardClient, display_names: dict[str, str] | None = None,
                  wait_timeout: float = 25.0, heartbeat_interval: float = 10.0, log=print):

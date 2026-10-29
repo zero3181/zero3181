@@ -17,6 +17,7 @@ import argparse
 import base64
 import hmac
 import html
+import ipaddress
 import json
 import os
 import re
@@ -32,11 +33,15 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
-from tools.debate import _local, Debate, missing_requirements, SEAT_TYPES, tidy_env  # noqa: E402
+from tools.debate import (_local, assign_roles, Debate, missing_requirements, PER_SEAT_MESSAGES, PRESETS,  # noqa: E402
+                          ROLES, SEAT_TYPES, tidy_env)
 
 PASSWORD = os.environ.get("RUNNER_PASSWORD", "")
+MAX_TOPIC_CHARS = 10_000
+# Form data arrives URL-encoded: one Korean character becomes 9 bytes (%XX%XX%XX).
+MAX_FORM_BYTES = MAX_TOPIC_CHARS * 9 + 20_000
 RUN_NAME = re.compile(r"^\d{8}-\d{6}$")
-RUN_FILES = {"transcript.json": "application/json", "verify.txt": "text/plain",
+RUN_FILES = {"transcript.json": "application/json", "verify.txt": "text/plain", "roles.json": "application/json",
              **{f"seat-{k}.log": "text/plain" for k in SEAT_TYPES}}
 
 
@@ -50,21 +55,31 @@ class State:
         self.run_name = ""
         self.result = None
         self.notes: list[str] = []
+        self.preset, self.per_seat, self.role_labels = "free", PER_SEAT_MESSAGES, {}
 
     def running(self) -> bool:
         return self.debate is not None and self.result is None
 
-    def start(self, topic: str, kinds: list[str]) -> str:
+    def start(self, topic: str, kinds: list[str], preset: str = "free", overrides: dict | None = None,
+              per_seat: int = PER_SEAT_MESSAGES) -> str:
         with self.lock:
             if self.running():
                 return "이미 토론이 진행 중입니다."
             problems = missing_requirements(kinds, server=True)
             if problems:
                 return " / ".join(problems)
+            roles, err = assign_roles(kinds, preset, overrides)
+            if err:
+                return err
             self.run_name = datetime.now().strftime("%Y%m%d-%H%M%S")
             self.messages, self.result, self.status = [], None, "시작"
+            self.preset, self.per_seat = preset, per_seat
+            self.role_labels = {SEAT_TYPES[k]["name"]: ROLES[r][0] for k, r in roles.items()}
             self.debate = Debate(
                 base=self.board, kinds=kinds, topic=topic, out_dir=self.data / "results" / self.run_name,
+                roles=roles, max_messages=per_seat * len(kinds),
+                # >=10 round trips needs ~15 messages per AI; with fewer, check what is possible.
+                min_round_trips=min(10, max(1, per_seat - 5)),
                 on_message=lambda m, who: self.messages.append(
                     (m["sequence"], who, m["sender_vendor"], m["text"].strip())),
                 on_status=lambda s: setattr(self, "status", s))
@@ -75,8 +90,59 @@ class State:
         d = self.debate
         (d.out_dir).mkdir(parents=True, exist_ok=True)
         (d.out_dir / "meta.json").write_text(json.dumps(
-            {"topic": d.topic, "seats": d.kinds}, ensure_ascii=False))
+            {"topic": d.topic, "seats": d.kinds, "preset": self.preset, "per_seat": self.per_seat},
+            ensure_ascii=False))
         self.result = d.run()
+
+
+class LoginGuard:
+    """Limit wrong-password attempts (the page may be reachable from the internet).
+
+    Per client: 5 wrong passwords in 10 minutes -> that client is blocked for 15 minutes.
+    Overall: 30 wrong passwords in 1 hour from anywhere -> logins are refused for 15 minutes."""
+
+    PER_CLIENT, WINDOW = 5, 600
+    GLOBAL, GLOBAL_WINDOW = 30, 3600
+    LOCK = 900
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.fails: dict[str, list[float]] = {}
+        self.until: dict[str, float] = {}
+
+    def wait_seconds(self, client: str, now: float | None = None) -> int:
+        now = now or time.time()
+        with self.lock:
+            until = max(self.until.get(client, 0), self.until.get("*", 0))
+        return int(until - now) if until > now else 0
+
+    def failed(self, client: str, now: float | None = None) -> None:
+        now = now or time.time()
+        with self.lock:
+            for key, limit, window in ((client, self.PER_CLIENT, self.WINDOW), ("*", self.GLOBAL, self.GLOBAL_WINDOW)):
+                hits = [t for t in self.fails.get(key, []) if t > now - window] + [now]
+                self.fails[key] = hits
+                if len(hits) >= limit:
+                    self.until[key] = now + self.LOCK
+                    self.fails[key] = []
+
+
+GUARD = LoginGuard()
+
+
+def client_id(peer: str, headers) -> str:
+    """The real client address. Behind a reverse proxy on the NAS the peer is a private address,
+    so use the address the proxy forwards (X-Forwarded-For / X-Real-IP) when there is one."""
+    try:
+        private = ipaddress.ip_address(peer).is_private
+    except ValueError:
+        private = False
+    fwd = (headers.get("X-Forwarded-For") or headers.get("X-Real-IP") or "").split(",")[0].strip()
+    return fwd if private and fwd else peer
+
+
+def short(text: str, n: int) -> str:
+    return text if len(text) <= n else text[:n] + "…"
 
 
 def seat_ready(kind: str) -> bool:
@@ -100,15 +166,20 @@ h1{{font-size:1.3rem}} h2{{font-size:1.05rem;margin-top:2rem}}
 .ok{{color:var(--ok);font-weight:600}} .bad{{color:var(--bad);font-weight:600}}
 textarea{{width:100%;box-sizing:border-box;min-height:90px;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg)}}
 button{{font:inherit;padding:8px 18px;border-radius:8px;border:0;background:var(--accent);color:var(--bg);cursor:pointer}}
-label{{margin-right:14px;white-space:nowrap}} a{{color:var(--accent)}} pre{{white-space:pre-wrap;font-size:.8rem}}
+label{{margin-right:14px;white-space:nowrap}}
+.role{{font-size:.8rem;padding:1px 7px;border-radius:9px;background:var(--line)}}
+select,input[type=number]{{font:inherit;padding:4px 6px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--fg)}}
+.seatrow{{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0}} a{{color:var(--accent)}} pre{{white-space:pre-wrap;font-size:.8rem}}
 </style></head><body><main>{body}</main></body></html>""".encode()
 
 
-def render_messages(msgs) -> str:
+def render_messages(msgs, roles: dict | None = None) -> str:
     out = []
     for seq, who, vendor, text in msgs:
         cls = "card human" if vendor == "human" else "card"
-        out.append(f'<div class="{cls}"><span class="who">{seq}. {html.escape(who)}</span> '
+        role = (roles or {}).get(who)
+        tag = f' <span class="role">{html.escape(role)}</span>' if role else ""
+        out.append(f'<div class="{cls}"><span class="who">{seq}. {html.escape(who)}</span>{tag} '
                    f'<span class="vendor">{html.escape(vendor)}</span><div class="text">{html.escape(text)}</div></div>')
     return "\n".join(out)
 
@@ -119,14 +190,22 @@ def make_handler(state: State):
             pass
 
         def _authed(self) -> bool:
+            client = client_id(self.client_address[0], self.headers)
+            wait = GUARD.wait_seconds(client)
+            if wait:
+                self._send(page("잠김", f"<p>비밀번호를 여러 번 틀려 잠시 잠겼습니다. "
+                                       f"{wait // 60 + 1}분 뒤에 다시 시도하세요.</p>"), code=429)
+                return False
             h = self.headers.get("Authorization", "")
             if h.startswith("Basic "):
                 try:
                     _, _, pw = base64.b64decode(h[6:]).decode().partition(":")
-                    if hmac.compare_digest(pw.encode(), PASSWORD.encode()):
-                        return True
+                    ok = hmac.compare_digest(pw.encode(), PASSWORD.encode())
                 except Exception:
-                    pass
+                    ok = False
+                if ok:
+                    return True
+                GUARD.failed(client)
             self.send_response(401)
             self.send_header("WWW-Authenticate", 'Basic realm="AI debate"')
             self.end_headers()
@@ -164,11 +243,24 @@ def make_handler(state: State):
             if not self._authed():
                 return
             n = int(self.headers.get("Content-Length") or 0)
-            form = urllib.parse.parse_qs(self.rfile.read(min(n, 20000)).decode())
+            if n > MAX_FORM_BYTES:
+                self.rfile.read(n)
+                return self._redirect("/?err=" + urllib.parse.quote(
+                    f"입력이 너무 깁니다. 주제는 {MAX_TOPIC_CHARS:,}자까지 쓸 수 있습니다."))
+            form = urllib.parse.parse_qs(self.rfile.read(n).decode())
             if self.path == "/start":
-                topic = (form.get("topic") or [""])[0].strip()[:2000]
+                topic = (form.get("topic") or [""])[0].strip()
+                if len(topic) > MAX_TOPIC_CHARS:
+                    return self._redirect("/?err=" + urllib.parse.quote(
+                        f"주제가 {len(topic):,}자입니다. {MAX_TOPIC_CHARS:,}자 이하로 줄여 주세요."))
                 kinds = [k for k in SEAT_TYPES if k in form.get("seat", [])]
-                err = "주제를 입력하세요." if not topic else state.start(topic, kinds)
+                preset = (form.get("preset") or ["free"])[0]
+                overrides = {k: form[f"role_{k}"][0] for k in kinds if form.get(f"role_{k}", ["auto"])[0] != "auto"}
+                try:
+                    per_seat = max(2, min(30, int((form.get("per_seat") or [PER_SEAT_MESSAGES])[0])))
+                except ValueError:
+                    per_seat = PER_SEAT_MESSAGES
+                err = "주제를 입력하세요." if not topic else state.start(topic, kinds, preset, overrides, per_seat)
                 return self._redirect("/?err=" + urllib.parse.quote(err) if err else "/")
             if self.path == "/stop" and state.debate:
                 state.debate.stop_event.set()
@@ -185,17 +277,28 @@ def make_handler(state: State):
             running = state.running()
             if running:
                 d = state.debate
-                body.append(f'<p><b>진행 중</b> · {html.escape(state.status)} · '
-                            f'{" · ".join(SEAT_TYPES[k]["name"] for k in d.kinds)}</p>'
+                lineup = " · ".join(SEAT_TYPES[k]["name"] + (f"({state.role_labels[SEAT_TYPES[k]['name']]})"
+                                    if SEAT_TYPES[k]["name"] in state.role_labels else "") for k in d.kinds)
+                body.append(f'<p><b>진행 중</b> · {html.escape(state.status)} · {PRESETS[state.preset][0]} · '
+                            f'{html.escape(lineup)}</p>'
                             '<form method="post" action="/stop"><button>중단</button></form>')
-                body.append(render_messages(state.messages))
+                body.append(render_messages(state.messages, state.role_labels))
             else:
-                checks = "".join(
-                    f'<label><input type="checkbox" name="seat" value="{k}" checked> {t["name"]}</label>'
+                role_opts = '<option value="auto">방식대로</option>' + "".join(
+                    f'<option value="{r}">{label}</option>' for r, (label, _) in ROLES.items()) + \
+                    '<option value="none">역할 없음</option>'
+                rows = "".join(
+                    f'<div class="seatrow"><label><input type="checkbox" name="seat" value="{k}" checked> {t["name"]}</label>'
+                    f'<select name="role_{k}" aria-label="{t["name"]} 역할">{role_opts}</select></div>'
                     for k, t in SEAT_TYPES.items() if seat_ready(k))
+                presets = "".join(f'<option value="{p}">{label}</option>' for p, (label, _, _) in PRESETS.items())
                 body.append(f"""<form method="post" action="/start" class="card">
-<p><textarea name="topic" placeholder="토론 주제를 입력하세요" required></textarea></p>
-<p>{checks}</p><p><button>시작</button></p></form>""")
+<p><textarea name="topic" placeholder="토론 주제를 입력하세요 ({MAX_TOPIC_CHARS:,}자까지)" maxlength="{MAX_TOPIC_CHARS}" required></textarea></p>
+<p><label>토론 방식 <select name="preset">{presets}</select></label></p>
+{rows}
+<p class="muted">역할은 위에서부터 발언 순서대로 배정됩니다. AI별로 바꾸려면 오른쪽에서 고르세요.</p>
+<p><label>AI당 발언 수 <input type="number" name="per_seat" value="{PER_SEAT_MESSAGES}" min="2" max="30"></label></p>
+<p><button>시작</button></p></form>""")
                 if state.result is not None:
                     r = state.result
                     verdict = '<span class="ok">PASSED</span>' if r.passed else '<span class="bad">NOT PASSED</span>'
@@ -216,8 +319,10 @@ def make_handler(state: State):
                 v = (d / "verify.txt").read_text() if (d / "verify.txt").exists() else ""
                 tag = ('<span class="ok">PASSED</span>' if "RESULT: PASSED" in v else
                        '<span class="bad">NOT PASSED</span>' if v else '<span class="muted">진행 중/중단</span>')
-                rows.append(f'<div class="card"><a href="/runs/{d.name}">{d.name}</a> {tag}<br>'
-                            f'<span class="muted">{html.escape(meta.get("topic", "")[:120])}</span></div>')
+                mode = PRESETS.get(meta.get("preset", "free"), ("",))[0]
+                rows.append(f'<div class="card"><a href="/runs/{d.name}">{d.name}</a> {tag} '
+                            f'<span class="muted">{html.escape(mode)}</span><br>'
+                            f'<span class="muted">{html.escape(short(meta.get("topic", ""), 120))}</span></div>')
             return "\n".join(rows) or '<p class="muted">아직 없습니다.</p>'
 
         def run_page(self, name: str, d: Path) -> bytes:
@@ -228,8 +333,9 @@ def make_handler(state: State):
             msgs = [(m["sequence"], names.get(m["sender_id"], "?"), m["sender_vendor"], m["text"].strip())
                     for m in t["messages"]]
             links = " · ".join(f'<a href="/runs/{name}/{f}">{f}</a>' for f in RUN_FILES if (d / f).exists())
+            roles = json.loads((d / "roles.json").read_text()) if (d / "roles.json").exists() else {}
             return page(name, f"<p><a href='/'>← 처음으로</a></p><h1>{name}</h1><p>{links}</p>"
-                        + render_messages(msgs))
+                        + render_messages(msgs, roles))
 
     return H
 
@@ -246,6 +352,9 @@ def main() -> None:
     for n in notes:
         print("설정 확인:", n, flush=True)
     PASSWORD = os.environ.get("RUNNER_PASSWORD", "")
+    if PASSWORD and len(PASSWORD) < 12:
+        notes.append("RUNNER_PASSWORD가 12자보다 짧습니다. 인터넷에 공개한다면 더 긴 비밀번호로 바꾸세요.")
+        print("설정 확인:", notes[-1], flush=True)
     if not PASSWORD:
         sys.exit("RUNNER_PASSWORD 환경변수를 설정하세요 (이 페이지의 비밀번호).")
     data = Path(a.data)

@@ -28,7 +28,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
-from tools.debate import _local, Debate, missing_requirements, SEAT_TYPES, tail  # noqa: E402
+from tools.debate import _local, assign_roles, Debate, missing_requirements, PRESETS, SEAT_TYPES, tail  # noqa: E402
 
 DEFAULT_TOPIC = ("소규모 오픈소스 프로젝트에서 코드 리뷰를 AI에게 맡길 때의 장단점과, "
                  "사람 리뷰어가 반드시 남겨야 할 역할은 무엇인가?")
@@ -52,12 +52,17 @@ def main() -> int:
     ap.add_argument("--followup", action="append",
                     help="AI들이 할 말이 없어 보일 때 던질 사회자 질문 (여러 번 지정 가능, 기본 3개)")
     ap.add_argument("--no-followup", action="store_true", help="사회자 질문을 던지지 않음")
+    ap.add_argument("--preset", default="free", choices=list(PRESETS),
+                    help="토론 방식: free=자유, roles=역할 분담, procon1=찬반 1:1, procon2=찬반 2:2")
     ap.add_argument("--min-round-trips", type=int, default=10)
     ap.add_argument("--timeout-min", type=float, help="전체 제한 시간(분). 기본: AI 발언당 2분, 최소 30분")
     a = ap.parse_args()
 
     kinds = [k.strip().lower() for k in a.seats.split(",") if k.strip()]
     problems = missing_requirements(kinds)
+    roles, role_err = assign_roles(kinds, a.preset)
+    if role_err:
+        problems.append(role_err)
     if sys.version_info < (3, 10):
         problems.append("Python 3.10 이상이 필요합니다.")
     if problems:
@@ -89,7 +94,7 @@ def main() -> int:
 
         d = Debate(base=base, kinds=kinds, topic=a.topic, out_dir=out,
                    models={"chatgpt": a.chatgpt_model, "gemini": a.gemini_model, "claude": a.claude_model},
-                   max_messages=a.messages, followups=[] if a.no_followup else a.followup,
+                   max_messages=a.messages, followups=[] if a.no_followup else a.followup, roles=roles,
                    min_round_trips=a.min_round_trips, timeout_min=a.timeout_min, on_message=show,
                    on_room=lambda rid, ct, ut: print(f"브라우저로 보기: {base}/#room={rid}&ct={ct}&ut={ut}\n"))
         try:

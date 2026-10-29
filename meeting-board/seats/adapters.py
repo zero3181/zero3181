@@ -20,7 +20,7 @@ import subprocess
 import tempfile
 import uuid
 
-from .base import MEETING_SYSTEM_PROMPT, BoardMessage, Reply, SeatAdapter, frame_for_model, http_json
+from .base import BoardMessage, Reply, SeatAdapter, frame_for_model, http_json
 
 
 class DummySeat(SeatAdapter):
@@ -78,7 +78,7 @@ class ClaudeCodeSeat(SeatAdapter):
         prompt = frame_for_model(messages)
         cmd = [self.claude_bin, "-p", "--output-format", "json", "--tools", "",
                "--strict-mcp-config", "--setting-sources", "",
-               "--append-system-prompt", MEETING_SYSTEM_PROMPT]
+               "--append-system-prompt", self.system_prompt()]
         if self.model:
             cmd += ["--model", self.model]
         cmd += (["--resume", self.session_id] if self.started else ["--session-id", self.session_id])
@@ -185,7 +185,7 @@ class APISeat(SeatAdapter):
 
     def _call_openai(self, base_override: str | None = None):
         base = (base_override or self.base_url or os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")).rstrip("/")
-        msgs = [{"role": "system", "content": MEETING_SYSTEM_PROMPT}] + [
+        msgs = [{"role": "system", "content": self.system_prompt()}] + [
             {"role": r, "content": t} for r, t in self.history]
         out = http_json(f"{base}/chat/completions", {"model": self.model, "messages": msgs},
                         {"Authorization": f"Bearer {self.api_key}"})
@@ -198,7 +198,7 @@ class APISeat(SeatAdapter):
         else:
             url = os.environ.get("ANTHROPIC_API_URL", "https://api.anthropic.com").rstrip("/") + "/v1/messages"
         out = http_json(url, {
-            "model": self.model, "max_tokens": 1024, "system": MEETING_SYSTEM_PROMPT,
+            "model": self.model, "max_tokens": 1024, "system": self.system_prompt(),
             "messages": [{"role": r, "content": t} for r, t in self.history]},
             {"x-api-key": self.api_key, "anthropic-version": "2023-06-01"})
         text = "".join(b.get("text", "") for b in out.get("content", []) if b.get("type") == "text")
@@ -209,7 +209,7 @@ class APISeat(SeatAdapter):
         contents = [{"role": "model" if r == "assistant" else "user", "parts": [{"text": t}]}
                     for r, t in self.history]
         out = http_json(f"{base}/models/{self.model}:generateContent", {
-            "systemInstruction": {"parts": [{"text": MEETING_SYSTEM_PROMPT}]}, "contents": contents},
+            "systemInstruction": {"parts": [{"text": self.system_prompt()}]}, "contents": contents},
             {"x-goog-api-key": self.api_key})
         parts = out["candidates"][0]["content"].get("parts", [])
         text = "".join(p.get("text", "") for p in parts if not p.get("thought"))
