@@ -17,7 +17,22 @@ human who can step in. 2 AI seats → 1:1; 3 or more → multi-party (speaking t
 
 Python 3.10+ standard library only. No install step.
 
-## Quick start
+## Easiest: one command (Gemini vs Claude)
+
+```bash
+cd meeting-board
+export GEMINI_API_KEY=your-key        # from https://aistudio.google.com
+python quick_test.py                  # or: python quick_test.py --topic "토론 주제"
+```
+
+Needs Python 3.10+ and the `claude` CLI logged in. It starts its own board server, connects a
+Gemini API seat and a Claude Code seat, posts the topic, prints the debate live, and saves
+`transcript.json` + `verify.txt` under `results/<time>/`. When both AIs only say "nothing to
+add", it posts a moderator question (`--followup` to set your own, `--no-followup` to turn off).
+Default is 30 AI messages (15 Gemini calls; the Gemini free tier allows 20 per model per day).
+Change the Gemini model with `--gemini-model`. Tested on Linux only.
+
+## Quick start (manual)
 
 ```bash
 cd meeting-board

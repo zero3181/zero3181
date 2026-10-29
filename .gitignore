@@ -10,3 +10,4 @@ dist
 # meeting-board
 *.sqlite3
 __pycache__/
+meeting-board/results/
