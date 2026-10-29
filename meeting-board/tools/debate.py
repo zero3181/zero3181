@@ -27,7 +27,7 @@ from tools.verify import render_report, verify  # noqa: E402
 # Seat order is speaking order.
 SEAT_TYPES = {
     "chatgpt": {"name": "ChatGPT", "vendor": "openai", "transport": "api", "provider": "openai",
-                "model_env": "OPENAI_MODEL", "keys": ("OPENAI_API_KEY",)},
+                "model_env": "OPENAI_MODEL", "keys": ("OPENAI_API_KEY",), "needs_model": True},
     "gemini": {"name": "Gemini", "vendor": "google", "transport": "api", "provider": "gemini",
                "model_env": "GEMINI_MODEL", "keys": ("GEMINI_API_KEY", "GOOGLE_API_KEY"),
                "default_model": "gemini-3.1-flash-lite"},

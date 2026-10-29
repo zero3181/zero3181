@@ -121,18 +121,25 @@ NAS를 다시 켜도 자동으로 다시 실행됩니다.
    sudo docker run -d --name ai-debate --restart unless-stopped -p 8790:8790 --env-file settings.env -v ai-debate-data:/data ai-debate
    ```
 
-## Grok 추가
+## ChatGPT · Grok 추가
 
-1. **키 넣기:** [console.x.ai](https://console.x.ai)에서 받은 키를 `settings.env`에 `XAI_API_KEY=키`로 넣습니다.
-2. **모델 목록 보기:** 위 업데이트 3단계의 `docker build`까지 마친 뒤 실행합니다.
-   키가 명령어 기록에 남지 않도록 `settings.env`에서 읽어 옵니다.
+| AI | 키 발급 | settings.env에 넣을 줄 |
+|---|---|---|
+| ChatGPT | [platform.openai.com](https://platform.openai.com) (ChatGPT Plus 구독과 별도, 쓴 만큼 과금) | `OPENAI_API_KEY=`, `OPENAI_MODEL=` |
+| Grok | [console.x.ai](https://console.x.ai) | `XAI_API_KEY=`, `GROK_MODEL=` |
+
+1. **키 넣기:** 받은 키를 `settings.env`의 해당 줄에 넣습니다.
+2. **이미지 만들기:** 위 업데이트 3단계의 `docker build`까지 실행합니다.
+3. **모델 목록 보기:** 키는 `settings.env`에서 읽으므로 명령어 기록에 남지 않습니다.
    ```bash
-   sudo docker run --rm --env-file settings.env ai-debate python -c "import json,os,urllib.request as u; r=u.Request('https://api.x.ai/v1/models', headers={'Authorization': 'Bearer '+os.environ['XAI_API_KEY'].strip(), 'User-Agent': 'meeting-board/1.0'}); print(chr(10).join(m['id'] for m in json.load(u.urlopen(r))['data']))"
+   sudo docker run --rm --env-file settings.env ai-debate python tools/list_models.py chatgpt
    ```
-3. **모델 고르기:** 나온 목록 중 하나를 `settings.env`에 `GROK_MODEL=모델이름`으로 넣습니다.
-   이미지·영상 생성용이 아닌 대화용 모델을 고르세요.
-4. **다시 띄우기:** 컨테이너를 지우고 다시 실행합니다(위 업데이트 3단계의 `stop` / `rm` / `run`).
-   토론방에 Grok 선택지가 나타납니다.
+   ```bash
+   sudo docker run --rm --env-file settings.env ai-debate python tools/list_models.py grok
+   ```
+4. **모델 고르기:** 나온 목록 중 하나를 `OPENAI_MODEL=` / `GROK_MODEL=` 뒤에 넣습니다.
+5. **다시 띄우기:** 컨테이너를 지우고 다시 실행합니다(위 업데이트 3단계의 `stop` / `rm` / `run`).
+   토론방에 선택지가 나타납니다.
 
 ## 집 밖에서 쓰려면
 
