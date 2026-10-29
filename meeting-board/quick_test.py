@@ -53,7 +53,7 @@ def main() -> int:
                     help="AI들이 할 말이 없어 보일 때 던질 사회자 질문 (여러 번 지정 가능, 기본 3개)")
     ap.add_argument("--no-followup", action="store_true", help="사회자 질문을 던지지 않음")
     ap.add_argument("--min-round-trips", type=int, default=10)
-    ap.add_argument("--timeout-min", type=float, default=30, help="전체 제한 시간(분)")
+    ap.add_argument("--timeout-min", type=float, help="전체 제한 시간(분). 기본: AI 발언당 2분, 최소 30분")
     a = ap.parse_args()
 
     kinds = [k.strip().lower() for k in a.seats.split(",") if k.strip()]

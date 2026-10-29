@@ -31,6 +31,9 @@ SEAT_TYPES = {
     "gemini": {"name": "Gemini", "vendor": "google", "transport": "api", "provider": "gemini",
                "model_env": "GEMINI_MODEL", "keys": ("GEMINI_API_KEY", "GOOGLE_API_KEY"),
                "default_model": "gemini-3.1-flash-lite"},
+    "grok": {"name": "Grok", "vendor": "xai", "transport": "api", "provider": "openai-compatible",
+             "model_env": "GROK_MODEL", "keys": ("XAI_API_KEY",), "needs_model": True,
+             "base_url_env": "XAI_BASE_URL", "base_url": "https://api.x.ai/v1"},
     "claude": {"name": "Claude", "vendor": "anthropic", "transport": "claude-code-cli",
                "model_env": "CLAUDE_MODEL"},
 }
@@ -66,7 +69,7 @@ def tail(path: Path, n: int = 8) -> str:
 
 
 SETTING_VARS = ("RUNNER_PASSWORD", "GEMINI_API_KEY", "GOOGLE_API_KEY", "OPENAI_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN",
-                "ANTHROPIC_API_KEY", "GEMINI_MODEL", "OPENAI_MODEL", "CLAUDE_MODEL")
+                "ANTHROPIC_API_KEY", "XAI_API_KEY", "GEMINI_MODEL", "OPENAI_MODEL", "CLAUDE_MODEL", "GROK_MODEL")
 
 
 def tidy_env(env=os.environ) -> list[str]:
@@ -108,6 +111,8 @@ def missing_requirements(kinds: list[str], server: bool = False) -> list[str]:
             out.append(f"모르는 참가자: {k} (가능: {', '.join(SEAT_TYPES)})")
         elif t.get("keys") and not any(os.environ.get(v) for v in t["keys"]):
             out.append(f"{t['name']}: {t['keys'][0]} 환경변수가 없습니다.")
+        elif t.get("needs_model") and not os.environ.get(t["model_env"]):
+            out.append(f"{t['name']}: {t['model_env']} 환경변수(모델 이름)가 없습니다.")
         elif k == "claude" and not shutil.which("claude"):
             out.append("Claude: `claude` 명령을 찾을 수 없습니다. Claude Code를 설치하세요.")
         elif k == "claude" and server and not (os.environ.get("CLAUDE_CODE_OAUTH_TOKEN")
@@ -139,7 +144,7 @@ class Debate:
     max_messages: int | None = None
     followups: list[str] | None = None
     min_round_trips: int = 10
-    timeout_min: float = 30
+    timeout_min: float | None = None  # default: 2 minutes per AI message, at least 30
     on_message: Callable[[dict, str], None] | None = None  # (message, display_name)
     on_room: Callable[[str, str, str], None] | None = None  # (room_id, conductor_token, user_token)
     on_status: Callable[[str], None] | None = None
@@ -177,6 +182,9 @@ class Debate:
                     cmd = ["run-seat", "claude-code"]
                 else:
                     cmd = ["run-seat", "api", "--provider", t["provider"]]
+                if t.get("provider") == "openai-compatible":
+                    cmd += ["--base-url", os.environ.get(t["base_url_env"]) or t["base_url"],
+                            "--vendor", t["vendor"], "--key-env", t["keys"][0]]
                 if model:
                     cmd += ["--model", model]
                 logs[t["name"]] = self.out_dir / f"seat-{k}.log"
@@ -191,7 +199,8 @@ class Debate:
             user = BoardClient(self.base, rid, ut)
             user.post(f"주제: {self.topic}\n서로의 주장에 구체적으로 반박하거나 보완하면서, "
                       "각 발언은 4~6문장으로 짧게 해주세요.", None)
-            shown, deadline, failed = 0, time.time() + self.timeout_min * 60, ""
+            timeout_min = self.timeout_min or max(30, 2 * max_messages)
+            shown, deadline, failed = 0, time.time() + timeout_min * 60, ""
             while True:
                 t = api(self.base, "GET", f"/rooms/{rid}/transcript", token=ct)
                 pnames = {p["participant_id"]: p["display_name"] for p in t["participants"]}
@@ -219,7 +228,7 @@ class Debate:
                     failed = "사용자가 중단했습니다."
                     break
                 if time.time() > deadline:
-                    failed = f"제한 시간 {self.timeout_min:g}분을 넘겨 중단했습니다."
+                    failed = f"제한 시간 {timeout_min:g}분을 넘겨 중단했습니다."
                     break
                 time.sleep(2)
             if failed:

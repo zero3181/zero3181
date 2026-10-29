@@ -37,7 +37,7 @@ from tools.debate import _local, Debate, missing_requirements, SEAT_TYPES, tidy_
 PASSWORD = os.environ.get("RUNNER_PASSWORD", "")
 RUN_NAME = re.compile(r"^\d{8}-\d{6}$")
 RUN_FILES = {"transcript.json": "application/json", "verify.txt": "text/plain",
-             "seat-chatgpt.log": "text/plain", "seat-gemini.log": "text/plain", "seat-claude.log": "text/plain"}
+             **{f"seat-{k}.log": "text/plain" for k in SEAT_TYPES}}
 
 
 class State:

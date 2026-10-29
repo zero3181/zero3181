@@ -99,6 +99,41 @@ NAS를 다시 켜도 자동으로 다시 실행됩니다.
   QuickConnect 주소로는 안 됩니다. NAS 내부 IP는 **제어판 → 정보 센터 → 네트워크**에 있습니다.
 - **방화벽:** **제어판 → 보안 → 방화벽**이 켜져 있으면 TCP 8790 허용 규칙을 "거부" 규칙보다 위에 추가합니다.
 
+## 새 버전으로 업데이트하기 (DSM 7.1 / SSH)
+
+1. 1단계의 ZIP을 다시 받아 압축을 풉니다.
+2. `meeting-board` 안의 파일 전부를 `docker/ai-debate`에 올려 덮어씁니다.
+   ZIP에는 `settings.env`가 없으므로 내 설정은 그대로 남습니다.
+3. SSH에서 이미지를 다시 만들고 컨테이너를 새로 띄웁니다.
+   ```bash
+   cd /volume1/docker/ai-debate
+   ```
+   ```bash
+   sudo docker build -t ai-debate .
+   ```
+   ```bash
+   sudo docker stop ai-debate
+   ```
+   ```bash
+   sudo docker rm ai-debate
+   ```
+   ```bash
+   sudo docker run -d --name ai-debate --restart unless-stopped -p 8790:8790 --env-file settings.env -v ai-debate-data:/data ai-debate
+   ```
+
+## Grok 추가
+
+1. **키 넣기:** [console.x.ai](https://console.x.ai)에서 받은 키를 `settings.env`에 `XAI_API_KEY=키`로 넣습니다.
+2. **모델 목록 보기:** 위 업데이트 3단계의 `docker build`까지 마친 뒤 실행합니다.
+   키가 명령어 기록에 남지 않도록 `settings.env`에서 읽어 옵니다.
+   ```bash
+   sudo docker run --rm --env-file settings.env ai-debate python -c "import json,os,urllib.request as u; r=u.Request('https://api.x.ai/v1/models', headers={'Authorization': 'Bearer '+os.environ['XAI_API_KEY'].strip(), 'User-Agent': 'meeting-board/1.0'}); print(chr(10).join(m['id'] for m in json.load(u.urlopen(r))['data']))"
+   ```
+3. **모델 고르기:** 나온 목록 중 하나를 `settings.env`에 `GROK_MODEL=모델이름`으로 넣습니다.
+   이미지·영상 생성용이 아닌 대화용 모델을 고르세요.
+4. **다시 띄우기:** 컨테이너를 지우고 다시 실행합니다(위 업데이트 3단계의 `stop` / `rm` / `run`).
+   토론방에 Grok 선택지가 나타납니다.
+
 ## 집 밖에서 쓰려면
 
 - 공유기 **포트포워딩으로 8790을 인터넷에 열지 마세요.** 이 페이지는 HTTPS가 아니라서

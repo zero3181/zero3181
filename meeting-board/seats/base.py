@@ -285,6 +285,7 @@ def http_json(url: str, body: dict, headers: dict[str, str], timeout: float = 12
     """POST JSON to a vendor API (uses environment proxy settings)."""
     req = urllib.request.Request(url, data=json.dumps(body).encode(), method="POST")
     req.add_header("Content-Type", "application/json")
+    req.add_header("User-Agent", "meeting-board/1.0")  # some APIs reject the default Python-urllib agent
     for k, v in headers.items():
         req.add_header(k, v)
     ctx = ssl.create_default_context()
