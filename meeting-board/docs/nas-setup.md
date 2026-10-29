@@ -8,7 +8,9 @@ NAS에서 24시간 돌아가는 웹페이지를 만듭니다. 폰이나 노트�
 
 - **Container Manager 지원 여부:** DSM **패키지 센터**에서 `Container Manager`를 검색하세요.
   - 보이면 설치합니다. 설치하면 `docker` 공유 폴더가 생깁니다.
-  - 안 보이면 이 NAS 모델은 지원하지 않는 모델이라 이 방법을 쓸 수 없습니다.
+  - 안 보이면 DSM 버전을 확인하세요(**제어판 → 정보 센터**).
+  - DSM 7.1 이하에서는 패키지 이름이 `Docker`이고 프로젝트 기능이 없습니다.
+    `Docker` 패키지를 설치한 뒤 아래 **DSM 7.1 이하** 절차를 따르세요. DS218+ / DSM 7.1.1에서 이 절차로 동작을 확인했습니다.
 - **Gemini API 키:** https://aistudio.google.com 에서 발급합니다.
 - **Claude 구독 토큰:** 맥 터미널에서 아래 명령을 한 번 실행합니다. 브라우저 로그인 후 터미널에
   긴 토큰이 출력되면 복사해 둡니다. 이 토큰은 비밀번호처럼 다루세요.
@@ -60,6 +62,42 @@ cp settings.env.example settings.env && open -e settings.env
 5. 아이디는 아무거나, 비밀번호는 `RUNNER_PASSWORD`에 넣은 값을 입력합니다.
 
 NAS를 다시 켜도 자동으로 다시 실행됩니다.
+
+## DSM 7.1 이하 (Container Manager 없음)
+
+1~3단계는 같습니다. 4단계 대신 SSH로 실행합니다.
+
+1. **SSH 켜기:** **제어판 → 터미널 및 SNMP → SSH 서비스 활성화**를 체크합니다.
+2. **NAS 접속:** 맥 터미널에서 접속합니다.
+   ```bash
+   ssh 관리자계정@NAS주소
+   ```
+3. **이미지 만들기와 실행:**
+   ```bash
+   cd /volume1/docker/ai-debate
+   ```
+   ```bash
+   sudo docker build -t ai-debate .
+   ```
+   ```bash
+   sudo docker run -d --name ai-debate --restart unless-stopped -p 8790:8790 --env-file settings.env -v ai-debate-data:/data ai-debate
+   ```
+4. **설정을 바꾼 뒤:** 아래 두 명령으로 컨테이너를 지우고 3번의 `docker run`을 다시 실행합니다.
+   토론 기록은 지워지지 않습니다. 새 버전 파일을 올렸다면 `docker build`부터 다시 합니다.
+   ```bash
+   sudo docker stop ai-debate
+   ```
+   ```bash
+   sudo docker rm ai-debate
+   ```
+
+## 접속이 안 되면
+
+- **컨테이너 상태:** `sudo docker ps -a --filter name=ai-debate`에서 STATUS가 `Up`인지 봅니다.
+- **실행 기록:** `sudo docker logs --tail 30 ai-debate`에 `AI 토론방: http://0.0.0.0:8790`이 보이면 프로그램은 정상입니다.
+- **주소:** DSM에 들어가는 주소에서 포트만 `8790`으로 바꾸고 `http://`로 접속합니다.
+  QuickConnect 주소로는 안 됩니다. NAS 내부 IP는 **제어판 → 정보 센터 → 네트워크**에 있습니다.
+- **방화벽:** **제어판 → 보안 → 방화벽**이 켜져 있으면 TCP 8790 허용 규칙을 "거부" 규칙보다 위에 추가합니다.
 
 ## 집 밖에서 쓰려면
 
