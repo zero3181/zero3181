@@ -65,6 +65,38 @@ def tail(path: Path, n: int = 8) -> str:
     return "\n".join(line[:300] for line in lines[-n:])
 
 
+SETTING_VARS = ("RUNNER_PASSWORD", "GEMINI_API_KEY", "GOOGLE_API_KEY", "OPENAI_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN",
+                "ANTHROPIC_API_KEY", "GEMINI_MODEL", "OPENAI_MODEL", "CLAUDE_MODEL")
+
+
+def tidy_env(env=os.environ) -> list[str]:
+    """Fix common settings.env mistakes in place; return notes for the user.
+
+    Docker --env-file keeps quotes and spaces as part of the value, an empty line like
+    `ANTHROPIC_API_KEY=` still sets the variable, and a `claude setup-token` token pasted
+    into ANTHROPIC_API_KEY makes Claude reject it as an invalid API key."""
+    notes = []
+    for k in list(env):
+        if k in SETTING_VARS:
+            v = env[k].strip()
+            if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+                v = v[1:-1].strip()
+            if v != env[k]:
+                env[k] = v
+                notes.append(f"{k}: 값 앞뒤의 공백/따옴표를 지웠습니다.")
+        if env[k] == "":
+            del env[k]
+    if env.get("ANTHROPIC_API_KEY", "").startswith("sk-ant-oat"):
+        token = env.pop("ANTHROPIC_API_KEY")
+        if env.get("CLAUDE_CODE_OAUTH_TOKEN"):
+            notes.append("ANTHROPIC_API_KEY에 구독 토큰이 들어 있어 무시했습니다. 비워 두세요.")
+        else:
+            env["CLAUDE_CODE_OAUTH_TOKEN"] = token
+            notes.append("ANTHROPIC_API_KEY에 들어 있던 구독 토큰(sk-ant-oat…)을 CLAUDE_CODE_OAUTH_TOKEN으로 옮겨 "
+                         "사용합니다. settings.env에서도 옮겨 두세요.")
+    return notes
+
+
 def missing_requirements(kinds: list[str], server: bool = False) -> list[str]:
     """Human-readable problems that would stop these seats from starting.
 

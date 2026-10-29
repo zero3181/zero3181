@@ -32,7 +32,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
-from tools.debate import _local, Debate, missing_requirements, SEAT_TYPES  # noqa: E402
+from tools.debate import _local, Debate, missing_requirements, SEAT_TYPES, tidy_env  # noqa: E402
 
 PASSWORD = os.environ.get("RUNNER_PASSWORD", "")
 RUN_NAME = re.compile(r"^\d{8}-\d{6}$")
@@ -49,6 +49,7 @@ class State:
         self.status = ""
         self.run_name = ""
         self.result = None
+        self.notes: list[str] = []
 
     def running(self) -> bool:
         return self.debate is not None and self.result is None
@@ -179,6 +180,8 @@ def make_handler(state: State):
             body = ["<h1>AI 토론방</h1>"]
             if err:
                 body.append(f'<p class="bad">{html.escape(err)}</p>')
+            for n in state.notes:
+                body.append(f'<p class="muted">설정 확인: {html.escape(n)}</p>')
             running = state.running()
             if running:
                 d = state.debate
@@ -238,9 +241,11 @@ def main() -> None:
     ap.add_argument("--board-port", type=int, default=8787)
     ap.add_argument("--data", default=os.environ.get("MB_DATA", str(HERE / "data")))
     a = ap.parse_args()
-    # settings.env leaves unused keys empty; treat them as not set.
-    for k in [k for k, v in os.environ.items() if v == ""]:
-        del os.environ[k]
+    global PASSWORD
+    notes = tidy_env()
+    for n in notes:
+        print("설정 확인:", n, flush=True)
+    PASSWORD = os.environ.get("RUNNER_PASSWORD", "")
     if not PASSWORD:
         sys.exit("RUNNER_PASSWORD 환경변수를 설정하세요 (이 페이지의 비밀번호).")
     data = Path(a.data)
@@ -260,7 +265,9 @@ def main() -> None:
     ready = [t["name"] for k, t in SEAT_TYPES.items() if seat_ready(k)]
     print(f"AI 토론방: http://{a.host}:{a.port}  (사용 가능: {', '.join(ready) or '없음'})", flush=True)
     try:
-        ThreadingHTTPServer((a.host, a.port), make_handler(State(data, board))).serve_forever()
+        state = State(data, board)
+        state.notes = notes
+        ThreadingHTTPServer((a.host, a.port), make_handler(state)).serve_forever()
     finally:
         server.terminate()
 

@@ -249,7 +249,8 @@ class SeatAdapter:
                         break
                     except Exception as e:
                         self.log(f"[{self.vendor}] model call failed (attempt {attempt + 1}/{MODEL_ATTEMPTS}): {e}")
-                        if any(w in str(e) for w in ("HTTP 401", "HTTP 403", "Failed to authenticate")):
+                        if any(w in str(e) for w in ("HTTP 401", "HTTP 403", "Failed to authenticate",
+                                                  "Invalid API key")):
                             break  # wrong key or token: retrying will not help
                         if attempt + 1 < MODEL_ATTEMPTS:
                             # Vendor rate limits (429) and overload (503) usually clear within a minute.
