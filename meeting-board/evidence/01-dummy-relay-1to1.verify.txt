@@ -1,0 +1,26 @@
+Room room_179cfcf9a4d8  "Dummy relay"  status=stopped
+
+Participants:
+  hu_38211cae07    human User           vendor=human      model=None  transport=board-ui  session_id=None
+  ai_9638d8c18f    ai    ChatGPT        vendor=openai     model=dummy-echo-v1  transport=dummy  session_id=dummy-openai-40c44050
+  ai_4c5ca7c187    ai    Claude         vendor=anthropic  model=dummy-echo-v1  transport=dummy  session_id=dummy-anthropic-1f0bbc39
+
+Message log (seq | message_id | sender -> reply_to sender):
+    1 | msg_426387642663459c | User/human     -> -  
+    2 | msg_3bbca543624645f6 | ChatGPT/openai    -> msg_426387642663459c (User/human)  
+    3 | msg_83e16184f4d04127 | Claude/anthropic -> msg_3bbca543624645f6 (ChatGPT/openai)  
+    4 | msg_b656dd60c34f4464 | ChatGPT/openai    -> msg_83e16184f4d04127 (Claude/anthropic)  
+    5 | msg_c57d0e04119d4739 | Claude/anthropic -> msg_b656dd60c34f4464 (ChatGPT/openai)  
+    6 | msg_f7227793a5e7434d | ChatGPT/openai    -> msg_c57d0e04119d4739 (Claude/anthropic)  
+    7 | msg_01f8e45c575746f3 | Claude/anthropic -> msg_f7227793a5e7434d (ChatGPT/openai)  
+
+Checks:
+  [PASS] two_or_more_ai_vendors: vendors=['anthropic', 'openai']
+  [PASS] distinct_session_ids: session_ids=['dummy-anthropic-1f0bbc39', 'dummy-openai-40c44050']
+  [FAIL] no_dummy_seats: dummy seats: Claude, ChatGPT
+  [PASS] every_ai_reply_targets_other_participant: 6 AI messages ok
+  [FAIL] cross_vendor_round_trips>=10: mode=1:1 round_trips=2 edges={'openai->anthropic': 3, 'anthropic->openai': 2}
+  [PASS] vendor_response_ids_unique: 0 vendor response ids
+  [PASS] provenance_session_matches_seat: ok
+
+RESULT: NOT PASSED

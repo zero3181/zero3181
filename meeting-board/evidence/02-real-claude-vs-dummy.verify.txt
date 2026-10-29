@@ -1,0 +1,26 @@
+Room room_ef312c34e8da  "Real Claude seat ↔ dummy (smoke test, not cross-vendor)"  status=stopped
+
+Participants:
+  hu_65b6dd3b9c    human User           vendor=human      model=None  transport=board-ui  session_id=None
+  ai_a024378394    ai    ChatGPT-dummy  vendor=openai     model=dummy-echo-v1  transport=dummy  session_id=dummy-openai-e97a65bf
+  ai_635db8edf0    ai    Claude         vendor=anthropic  model=None  transport=claude-code-cli  session_id=8ca055eb-0f8e-44ea-ab37-2cee79200a2b
+
+Message log (seq | message_id | sender -> reply_to sender):
+    1 | msg_72cc3a557b4c45f8 | User/human     -> -  
+    2 | msg_189f3f3d84334ac5 | ChatGPT-dummy/openai    -> msg_72cc3a557b4c45f8 (User/human)  
+    3 | msg_11394168c0b34c6d | Claude/anthropic -> msg_189f3f3d84334ac5 (ChatGPT-dummy/openai)  8ca055eb-0f8e-44ea-ab37-2cee79200a2b
+    4 | msg_0c6b2603f1e34a80 | ChatGPT-dummy/openai    -> msg_11394168c0b34c6d (Claude/anthropic)  
+    5 | msg_dd7b1d0d07074c9d | Claude/anthropic -> msg_0c6b2603f1e34a80 (ChatGPT-dummy/openai)  8ca055eb-0f8e-44ea-ab37-2cee79200a2b
+    6 | msg_268bad3eb8ec49d2 | ChatGPT-dummy/openai    -> msg_dd7b1d0d07074c9d (Claude/anthropic)  
+    7 | msg_404a40e27e294be0 | Claude/anthropic -> msg_268bad3eb8ec49d2 (ChatGPT-dummy/openai)  8ca055eb-0f8e-44ea-ab37-2cee79200a2b
+
+Checks:
+  [PASS] two_or_more_ai_vendors: vendors=['anthropic', 'openai']
+  [PASS] distinct_session_ids: session_ids=['8ca055eb-0f8e-44ea-ab37-2cee79200a2b', 'dummy-openai-e97a65bf']
+  [FAIL] no_dummy_seats: dummy seats: ChatGPT-dummy
+  [PASS] every_ai_reply_targets_other_participant: 6 AI messages ok
+  [FAIL] cross_vendor_round_trips>=10: mode=1:1 round_trips=2 edges={'openai->anthropic': 3, 'anthropic->openai': 2}
+  [PASS] vendor_response_ids_unique: 0 vendor response ids
+  [PASS] provenance_session_matches_seat: ok
+
+RESULT: NOT PASSED

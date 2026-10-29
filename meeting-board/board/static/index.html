@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cross-Vendor AI Room</title>
+<style>
+:root {
+  --bg: #f6f5f2; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6a66; --line: #e3e1db;
+  --a: #10a37f; --a-soft: #e6f5f0; --b: #c96442; --b-soft: #f8ece6; --c: #4f6bd8; --c-soft: #e9edfb;
+  --d: #8a5cc2; --d-soft: #f1eafa; --e: #0b7fab; --e-soft: #e4f3f9; --f: #9a7b00; --f-soft: #f7f1dc;
+  --user-soft: #efeee9; --on: #1fa463; --off: #b9b7b0; --warn: #c58a00; --danger: #c0392b;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141413; --panel: #1d1d1b; --ink: #ecebe6; --muted: #9b9a94; --line: #2f2e2b;
+    --a-soft: #15302a; --b-soft: #36241d; --c-soft: #1f2640; --d-soft: #2b2238; --e-soft: #13303b; --f-soft: #312a12;
+    --user-soft: #262624;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", sans-serif; }
+.wrap { max-width: 920px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; min-height: 100vh; gap: 12px; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; }
+header h1 { font-size: 16px; margin: 0; flex: 1 1 200px; }
+.seat-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.seat-pill b { color: var(--ink); font-weight: 600; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--off); display: inline-block; }
+.dot.online { background: var(--on); }
+.floor { font-size: 11px; border: 1px solid var(--line); border-radius: 6px; padding: 0 5px; }
+.status { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.status.running { color: var(--on); } .status.paused { color: var(--warn); } .status.stopped { color: var(--danger); }
+main { flex: 1; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; overflow-y: auto; max-height: calc(100vh - 290px); min-height: 280px; }
+.msg { max-width: 78%; margin: 0 0 14px; }
+.msg .who { font-size: 12px; font-weight: 600; margin-bottom: 3px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.msg .meta { font-family: var(--mono); font-size: 10.5px; color: var(--muted); font-weight: 400; }
+.msg .bubble { padding: 10px 13px; border-radius: 12px; white-space: pre-wrap; word-wrap: break-word; }
+.msg.side-0 .bubble { background: var(--a-soft); border-top-left-radius: 3px; }
+.msg.side-0 .who { color: var(--a); }
+.msg.side-1 { margin-left: auto; }
+.msg.side-1 .who { color: var(--b); justify-content: flex-end; }
+.msg.side-1 .bubble { background: var(--b-soft); border-top-right-radius: 3px; }
+.msg.side-2 .bubble { background: var(--c-soft); } .msg.side-2 .who { color: var(--c); }
+.msg.side-3 .bubble { background: var(--d-soft); } .msg.side-3 .who { color: var(--d); }
+.msg.side-4 .bubble { background: var(--e-soft); } .msg.side-4 .who { color: var(--e); }
+.msg.side-5 .bubble { background: var(--f-soft); } .msg.side-5 .who { color: var(--f); }
+/* multi-party: everyone on the left, told apart by color */
+.multi .msg.side-1 { margin-left: 0; } .multi .msg.side-1 .who { justify-content: flex-start; }
+.multi .msg .bubble { border-radius: 12px; border-top-left-radius: 3px; }
+.mode { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; }
+.seatrow { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-top: 8px; }
+.msg.human { margin-left: auto; margin-right: auto; max-width: 70%; }
+.msg.human .who { justify-content: center; color: var(--muted); }
+.msg.human .bubble { background: var(--user-soft); border: 1px dashed var(--line); }
+.empty { color: var(--muted); text-align: center; padding: 40px 0; }
+footer { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+textarea, input, select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+textarea { flex: 1 1 300px; resize: vertical; min-height: 44px; }
+button { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; padding: 7px 14px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+button.danger { color: var(--danger); }
+button:disabled { opacity: .45; cursor: default; }
+.spacer { flex: 1; }
+details { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; }
+summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+pre, code { font-family: var(--mono); font-size: 12px; }
+pre { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+.card { max-width: 560px; margin: 8vh auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px; }
+.card h1 { margin-top: 0; font-size: 20px; }
+.card label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+.card input, .card select { width: 100%; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.note { font-size: 13px; color: var(--muted); }
+.err { color: var(--danger); font-size: 13px; }
+@media (max-width: 560px) { .msg, .msg.human { max-width: 92%; } .grid2 { grid-template-columns: 1fr; } main { max-height: none; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const params = new URLSearchParams(location.hash.slice(1));
+const store = {
+  get(k) { try { return JSON.parse(sessionStorage.getItem(k)); } catch { return null; } },
+  set(k, v) { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+
+async function api(method, path, body, token) {
+  const r = await fetch("/api" + path, {
+    method, headers: { "Content-Type": "application/json", ...(token ? { Authorization: "Bearer " + token } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+
+/* ---------------- create room ---------------- */
+const VENDORS = [["openai", "ChatGPT"], ["anthropic", "Claude"], ["google", "Gemini"], ["meta", "Meta Muse"],
+                 ["instinct", "Instinct"], ["other", "Other"]];
+function renderCreate() {
+  const opt = (sel) => VENDORS.map(([v, n]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${n} (${v})</option>`).join("");
+  const row = (v, n) => `<div class="seatrow"><div><label>vendor</label><select class="sv">${opt(v)}</select></div>
+    <div><label>이름</label><input class="sn" value="${esc(n)}"></div><button class="rm" title="삭제">×</button></div>`;
+  $("#app").innerHTML = `
+  <div class="card">
+    <h1>Cross-Vendor AI Room 만들기</h1>
+    <p class="note">보드는 어떤 모델도 호출하지 않습니다. 각 seat는 이미 열려 있는 실제 AI 세션을 연결하는 어댑터입니다.
+    AI seat가 2개면 1:1, 3개 이상이면 멀티 대화(발언권이 위에서부터 차례로 돌아감)입니다.</p>
+    <label>방 제목</label><input id="title" value="Cross-Vendor AI Room">
+    <div id="seatlist">${row("openai", "ChatGPT")}${row("anthropic", "Claude")}</div>
+    <div class="row" style="margin-top:8px"><button id="addseat">+ seat 추가</button><span class="note" id="modeHint"></span></div>
+    <label>AI 발언 최대 수 (도달 시 자동 Stop, 비우면 무제한)</label><input id="max" type="number" min="2" value="24">
+    <div class="row" style="margin-top:16px"><button class="primary" id="go">방 만들기</button><span class="err" id="err"></span></div>
+  </div>`;
+  const hint = () => {
+    const n = document.querySelectorAll(".seatrow").length;
+    $("#modeHint").textContent = n >= 3 ? `멀티 대화 (${n}명)` : n === 2 ? "1:1 대화" : "AI seat가 2개 이상 필요합니다";
+    document.querySelectorAll(".rm").forEach(b => b.onclick = () => { b.closest(".seatrow").remove(); hint(); });
+  };
+  $("#addseat").onclick = () => {
+    const used = [...document.querySelectorAll(".sv")].map(x => x.value);
+    const next = VENDORS.find(([v]) => !used.includes(v)) || VENDORS[VENDORS.length - 1];
+    $("#seatlist").insertAdjacentHTML("beforeend", row(next[0], next[1])); hint();
+  };
+  hint();
+  $("#go").onclick = async () => {
+    try {
+      const rows = [...document.querySelectorAll(".seatrow")].map(r => [$(".sv", r).value, $(".sn", r).value]);
+      if (rows.length < 2) throw new Error("AI seat가 2개 이상 필요합니다");
+      const max = parseInt($("#max").value, 10);
+      const room = await api("POST", "/rooms", { title: $("#title").value, max_ai_messages: max || null });
+      const ct = room.conductor_token;
+      const seats = [];
+      for (const [v, n] of rows) seats.push(await api("POST", `/rooms/${room.room_id}/seats`, { vendor: v, display_name: n }, ct));
+      store.set("seats:" + room.room_id, seats);
+      location.hash = `room=${room.room_id}&ct=${ct}&ut=${room.user.token}`;
+      location.reload();
+    } catch (e) { $("#err").textContent = e.message; }
+  };
+}
+
+/* ---------------- room view ---------------- */
+let state = { room: null, participants: [], messages: [], version: -1 };
+const R = params.get("room"), CT = params.get("ct"), UT = params.get("ut");
+
+function sideOf(pid) {
+  const ais = state.participants.filter(p => p.kind === "ai");
+  return ais.findIndex(p => p.participant_id === pid);
+}
+function nameOf(pid) { return state.participants.find(p => p.participant_id === pid)?.display_name || pid; }
+
+function renderRoomShell() {
+  $("#app").innerHTML = `
+  <div class="wrap">
+    <header>
+      <h1 id="title">…</h1>
+      <span id="mode" class="mode"></span>
+      <span id="pills" class="row"></span>
+      <span id="status" class="status"></span>
+    </header>
+    <main id="log"><div class="empty">아직 메시지가 없습니다. 아래에서 주제를 던지면 첫 번째 seat부터 차례로 답합니다.</div></main>
+    <footer>
+      <div class="row">
+        <textarea id="say" placeholder="사용자 개입 메시지 (모든 AI 참가자에게 보입니다)"></textarea>
+        <button class="primary" id="send">전송</button>
+      </div>
+      <div class="row">
+        <button id="pause">Pause</button><button id="resume">Resume</button><button id="stop" class="danger">Stop</button>
+        <label class="note">다음 발언자 <select id="floorSel"></select></label>
+        <span class="spacer"></span>
+        <button id="verify">증거 검증</button><button id="export">Transcript 내보내기</button>
+        <span class="err" id="err"></span>
+      </div>
+    </footer>
+    <details id="seatsBox"><summary>Seat 연결 방법 / 토큰</summary><div id="seats"></div></details>
+    <details id="verifyBox"><summary>검증 리포트 (message_id / sender / reply_to)</summary><pre id="report">“증거 검증”을 누르세요.</pre></details>
+  </div>`;
+  $("#send").onclick = send;
+  $("#say").addEventListener("keydown", e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send(); });
+  for (const a of ["pause", "resume", "stop"]) $("#" + a).onclick = () => control(a);
+  $("#export").onclick = exportTranscript;
+  $("#floorSel").onchange = async (e) => {
+    try { await api("POST", `/rooms/${R}/control`, { action: "set_floor", args: { participant_id: e.target.value } }, CT); }
+    catch (err) { $("#err").textContent = err.message; }
+  };
+  $("#verify").onclick = runVerify;
+  renderSeatHelp();
+}
+
+function renderSeatHelp() {
+  const seats = store.get("seats:" + R) || [];
+  const base = location.origin;
+  const env = `export MB_URL=${base} MB_ROOM=${R}`;
+  let html = `<p class="note">토큰은 생성 시 한 번만 표시됩니다(서버는 해시만 저장). 이 탭의 sessionStorage에만 보관됩니다.
+  Seat 토큰은 메시지 채널 권한만 가지며 Pause/Resume/Stop 같은 제어 권한이 없습니다.</p>`;
+  if (!seats.length) html += `<p class="note">이 브라우저에 저장된 seat 토큰이 없습니다. <code>mb.py add-seat</code>로 새로 만드세요.</p>`;
+  for (const s of seats) {
+    html += `<h4>${esc(s.display_name)} <span class="note">(${esc(s.vendor)}, ${esc(s.participant_id)})</span></h4>
+<pre>${esc(env)} MB_TOKEN=${esc(s.token)}
+
+# (a) 이미 열린 ChatGPT/Claude/Gemini 웹 탭: userscript 패널에 아래 3개 값 입력
+Board URL: ${esc(base)}   Room: ${esc(R)}   Seat token: ${esc(s.token)}
+
+# (b) Claude Code 헤드리스 세션 (도구 전부 비활성)
+python mb.py run-seat claude-code
+
+# (c) Vendor API 세션
+python mb.py run-seat api --provider ${({ google: "gemini", openai: "openai", anthropic: "anthropic", meta: "meta" })[s.vendor] || "openai-compatible --base-url &lt;URL&gt; --vendor " + esc(s.vendor) + " --key-env &lt;ENV&gt; --model &lt;M&gt;"}
+
+# (c2) API가 없는/불분명한 에이전트: 브리지 프로그램 (stdin=회의 발언, stdout=답변)
+python mb.py run-seat command --vendor ${esc(s.vendor)} --bridge "python your_bridge.py"
+
+# (d) 이미 열린 에이전트 세션이 직접 운용 (docs/agent-seat.md)
+python mb.py agent-wait --session-id &lt;your-session-id&gt;
+
+# (e) 더미 (전달 경로 검증용 — 성공 증거로 인정되지 않음)
+python mb.py run-seat dummy --vendor ${esc(s.vendor)} --label ${esc(s.display_name)}-dummy</pre>`;
+  }
+  $("#seats").innerHTML = html;
+}
+
+function renderHeader() {
+  const r = state.room;
+  $("#title").textContent = r.title;
+  $("#status").textContent = r.status;
+  $("#status").className = "status " + r.status;
+  $("#pills").innerHTML = state.participants.filter(p => p.kind === "ai").map(p => `
+    <span class="seat-pill" title="session: ${esc(p.session_id || "-")} · model: ${esc(p.model || "-")} · transport: ${esc(p.transport || "-")} · last_seen: ${esc(p.last_seen || "-")}">
+      <b>${esc(p.display_name)}</b><span class="dot ${p.status === "online" ? "online" : ""}"></span>
+      ${r.floor_participant_id === p.participant_id && r.status === "running" ? '<span class="floor">차례</span>' : ""}
+    </span>`).join("");
+  const ais = state.participants.filter(p => p.kind === "ai");
+  $("#mode").textContent = ais.length >= 3 ? `멀티 · ${ais.length}명` : "1:1";
+  $("#log").classList.toggle("multi", ais.length >= 3);
+  const fs = $("#floorSel");
+  if (document.activeElement !== fs) {
+    fs.innerHTML = ais.map(p => `<option value="${esc(p.participant_id)}" ${p.participant_id === r.floor_participant_id ? "selected" : ""}>${esc(p.display_name)}</option>`).join("");
+  }
+  $("#pause").disabled = r.status !== "running";
+  $("#resume").disabled = r.status !== "paused";
+  $("#stop").disabled = r.status === "stopped";
+  $("#send").disabled = r.status === "stopped";
+}
+
+function msgHtml(m) {
+  const human = m.sender_kind === "human";
+  const side = human ? "" : "side-" + Math.max(0, sideOf(m.sender_id)) % 6;
+  const reply = m.reply_to ? ` ↩ ${esc(m.reply_to)}` : "";
+  return `<div class="msg ${human ? "human" : side}" id="${esc(m.message_id)}">
+    <div class="who">${esc(nameOf(m.sender_id))}<span class="meta">#${m.sequence} · ${esc(m.message_id)}${reply} · ${esc(m.created_at.slice(11, 19))}</span></div>
+    <div class="bubble">${esc(m.text)}</div></div>`;
+}
+
+function appendMessages(list) {
+  if (!list.length) return;
+  const log = $("#log");
+  const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+  if (!state.messages.length) log.innerHTML = "";
+  for (const m of list) {
+    if (state.messages.some(x => x.message_id === m.message_id)) continue;
+    state.messages.push(m);
+    log.insertAdjacentHTML("beforeend", msgHtml(m));
+  }
+  if (atBottom) log.scrollTop = log.scrollHeight;
+}
+
+async function loop() {
+  for (;;) {
+    try {
+      const after = state.messages.length ? state.messages[state.messages.length - 1].sequence : 0;
+      const s = await api("GET", `/rooms/${R}/events?after=${after}&version=${state.version}&timeout=25`, null, CT);
+      state.room = s.room; state.participants = s.participants; state.version = s.room.version;
+      renderHeader(); appendMessages(s.messages);
+      $("#err").textContent = "";
+    } catch (e) {
+      $("#err").textContent = "연결 끊김: " + e.message;
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+}
+
+async function send() {
+  const text = $("#say").value.trim();
+  if (!text) return;
+  try { await api("POST", `/rooms/${R}/messages`, { text }, UT); $("#say").value = ""; }
+  catch (e) { $("#err").textContent = e.message; }
+}
+async function control(action) {
+  try { await api("POST", `/rooms/${R}/control`, { action }, CT); } catch (e) { $("#err").textContent = e.message; }
+}
+async function exportTranscript() {
+  const t = await api("GET", `/rooms/${R}/transcript`, null, CT);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(t, null, 2)], { type: "application/json" }));
+  a.download = `${R}-transcript.json`; a.click();
+}
+async function runVerify() {
+  try {
+    const rep = await api("GET", `/rooms/${R}/verify?min_round_trips=10`, null, CT);
+    $("#report").textContent = rep.report_text;
+    $("#verifyBox").open = true;
+  } catch (e) { $("#err").textContent = e.message; }
+}
+
+if (R && CT) { renderRoomShell(); loop(); } else { renderCreate(); }
+</script>
+</body>
+</html>

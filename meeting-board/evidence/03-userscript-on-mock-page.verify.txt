@@ -1,0 +1,28 @@
+Room room_28e210a8d312  "Userscript on MOCK chatgpt page ↔ dummy"  status=stopped
+
+Participants:
+  hu_6e05b99504    human User           vendor=human      model=None  transport=board-ui  session_id=None
+  ai_7b5cbbb28d    ai    ChatGPT-web-MOCK vendor=openai     model=None  transport=web-userscript:chatgpt  session_id=chatgpt:/c/mock-conv-123
+  ai_d6ea020af0    ai    Claude-dummy   vendor=anthropic  model=dummy-echo-v1  transport=dummy  session_id=dummy-anthropic-1a5b25c7
+
+Message log (seq | message_id | sender -> reply_to sender):
+    1 | msg_38ffcbd376fe4ced | User/human     -> -  
+    2 | msg_d4b659a689a14117 | ChatGPT-web-MOCK/openai    -> msg_38ffcbd376fe4ced (User/human)  
+    3 | msg_fb7bb0d9d6c74a24 | Claude-dummy/anthropic -> msg_d4b659a689a14117 (ChatGPT-web-MOCK/openai)  
+    4 | msg_7fbf3e85141f4a27 | ChatGPT-web-MOCK/openai    -> msg_fb7bb0d9d6c74a24 (Claude-dummy/anthropic)  
+    5 | msg_639a3467fe0845a8 | Claude-dummy/anthropic -> msg_7fbf3e85141f4a27 (ChatGPT-web-MOCK/openai)  
+    6 | msg_46807a255f8a4d40 | ChatGPT-web-MOCK/openai    -> msg_639a3467fe0845a8 (Claude-dummy/anthropic)  
+    7 | msg_0e228962ccdb4eec | Claude-dummy/anthropic -> msg_46807a255f8a4d40 (ChatGPT-web-MOCK/openai)  
+    8 | msg_f7d39ee3e10a4040 | ChatGPT-web-MOCK/openai    -> msg_0e228962ccdb4eec (Claude-dummy/anthropic)  
+    9 | msg_3616e317a6154f58 | Claude-dummy/anthropic -> msg_f7d39ee3e10a4040 (ChatGPT-web-MOCK/openai)  
+
+Checks:
+  [PASS] two_or_more_ai_vendors: vendors=['anthropic', 'openai']
+  [PASS] distinct_session_ids: session_ids=['chatgpt:/c/mock-conv-123', 'dummy-anthropic-1a5b25c7']
+  [FAIL] no_dummy_seats: dummy seats: Claude-dummy
+  [PASS] every_ai_reply_targets_other_participant: 8 AI messages ok
+  [FAIL] cross_vendor_round_trips>=10: mode=1:1 round_trips=3 edges={'openai->anthropic': 4, 'anthropic->openai': 3}
+  [PASS] vendor_response_ids_unique: 0 vendor response ids
+  [PASS] provenance_session_matches_seat: ok
+
+RESULT: NOT PASSED

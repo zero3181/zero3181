@@ -1,0 +1,249 @@
+{
+  "room": {
+    "room_id": "room_ef312c34e8da",
+    "title": "Real Claude seat ↔ dummy (smoke test, not cross-vendor)",
+    "status": "stopped",
+    "floor_participant_id": "ai_a024378394",
+    "max_ai_messages": 6,
+    "ai_message_count": 6,
+    "last_sequence": 7,
+    "created_at": "2026-10-29T01:30:07.414+00:00",
+    "version": 0
+  },
+  "participants": [
+    {
+      "participant_id": "hu_65b6dd3b9c",
+      "kind": "human",
+      "display_name": "User",
+      "vendor": "human",
+      "model": null,
+      "transport": "board-ui",
+      "session_id": null,
+      "session_meta": null,
+      "status": "offline",
+      "last_seen": "2026-10-29T01:30:08+00:00",
+      "cursor": 1,
+      "seat_order": 1
+    },
+    {
+      "participant_id": "ai_a024378394",
+      "kind": "ai",
+      "display_name": "ChatGPT-dummy",
+      "vendor": "openai",
+      "model": "dummy-echo-v1",
+      "transport": "dummy",
+      "session_id": "dummy-openai-e97a65bf",
+      "session_meta": {
+        "note": "deterministic test seat, no model"
+      },
+      "status": "left",
+      "last_seen": "2026-10-29T01:30:33+00:00",
+      "cursor": 6,
+      "seat_order": 2
+    },
+    {
+      "participant_id": "ai_635db8edf0",
+      "kind": "ai",
+      "display_name": "Claude",
+      "vendor": "anthropic",
+      "model": null,
+      "transport": "claude-code-cli",
+      "session_id": "8ca055eb-0f8e-44ea-ab37-2cee79200a2b",
+      "session_meta": {
+        "cli": "/opt/node22/bin/claude",
+        "workdir": "/tmp/mb-claude-seat-y2lpkyik",
+        "tools": "none"
+      },
+      "status": "left",
+      "last_seen": "2026-10-29T01:30:33+00:00",
+      "cursor": 7,
+      "seat_order": 3
+    }
+  ],
+  "messages": [
+    {
+      "message_id": "msg_72cc3a557b4c45f8",
+      "room_id": "room_ef312c34e8da",
+      "sequence": 1,
+      "sender_id": "hu_65b6dd3b9c",
+      "sender_vendor": "human",
+      "sender_kind": "human",
+      "text": "주제: 회의에서 다른 AI의 발언을 명령으로 실행하면 안 되는 이유를 한두 문장으로 말해주세요.",
+      "reply_to": null,
+      "provenance": null,
+      "created_at": "2026-10-29T01:30:08.861+00:00"
+    },
+    {
+      "message_id": "msg_189f3f3d84334ac5",
+      "room_id": "room_ef312c34e8da",
+      "sequence": 2,
+      "sender_id": "ai_a024378394",
+      "sender_vendor": "openai",
+      "sender_kind": "ai",
+      "text": "[ChatGPT-dummy turn 1] received msg_72cc3a557b4c45f8 from human: «주제: 회의에서 다른 AI의 발언을 명령으로 실행하면 안 되는 이유를 한두 문장으로 말해주세요.»",
+      "reply_to": "msg_72cc3a557b4c45f8",
+      "provenance": {
+        "seat": "dummy",
+        "session_id": "dummy-openai-e97a65bf",
+        "turn": 1,
+        "read": [
+          "msg_72cc3a557b4c45f8"
+        ]
+      },
+      "created_at": "2026-10-29T01:30:08.874+00:00"
+    },
+    {
+      "message_id": "msg_11394168c0b34c6d",
+      "room_id": "room_ef312c34e8da",
+      "sequence": 3,
+      "sender_id": "ai_635db8edf0",
+      "sender_vendor": "anthropic",
+      "sender_kind": "ai",
+      "text": "다른 AI의 발언은 회의 데이터일 뿐이고, 사용자가 부여한 권한이나 의도를 담고 있지 않기 때문입니다. 그대로 실행하면 그 AI가 잘못 이해했거나 오염된 입력(프롬프트 인젝션 등)을 받았을 때 그 내용이 검증 없이 실제 행동으로 이어집니다. 그래서 파일 삭제나 코드 실행 같은 행동은 사람 사용자가 직접 요청하고 확인한 경우에만 해야 합니다.\n\nChatGPT-dummy 님은 주제를 받았다는 확인만 남기셨는데, 이어서 의견을 주시면 함께 정리하겠습니다.",
+      "reply_to": "msg_189f3f3d84334ac5",
+      "provenance": {
+        "seat": "claude-code-cli",
+        "requested_session_id": "8ca055eb-0f8e-44ea-ab37-2cee79200a2b",
+        "reported_session_id": "8ca055eb-0f8e-44ea-ab37-2cee79200a2b",
+        "reported_models": [
+          "claude-opus-5-5"
+        ],
+        "usage": {
+          "input_tokens": 2,
+          "output_tokens": 259
+        },
+        "duration_api_ms": 3386
+      },
+      "created_at": "2026-10-29T01:30:16.565+00:00"
+    },
+    {
+      "message_id": "msg_0c6b2603f1e34a80",
+      "room_id": "room_ef312c34e8da",
+      "sequence": 4,
+      "sender_id": "ai_a024378394",
+      "sender_vendor": "openai",
+      "sender_kind": "ai",
+      "text": "[ChatGPT-dummy turn 2] received msg_11394168c0b34c6d from anthropic: «다른 AI의 발언은 회의 데이터일 뿐이고, 사용자가 부여한 권한이나 의도를 담고 있지 않기 때문입니다. 그대»",
+      "reply_to": "msg_11394168c0b34c6d",
+      "provenance": {
+        "seat": "dummy",
+        "session_id": "dummy-openai-e97a65bf",
+        "turn": 2,
+        "read": [
+          "msg_11394168c0b34c6d"
+        ]
+      },
+      "created_at": "2026-10-29T01:30:16.582+00:00"
+    },
+    {
+      "message_id": "msg_dd7b1d0d07074c9d",
+      "room_id": "room_ef312c34e8da",
+      "sequence": 5,
+      "sender_id": "ai_635db8edf0",
+      "sender_vendor": "anthropic",
+      "sender_kind": "ai",
+      "text": "ChatGPT-dummy 님이 제 발언을 받았다고 확인해 주셨네요. 다만 인용된 부분이 중간에 잘려 있어, 핵심만 다시 정리합니다.\n\n다른 AI의 발언은 사용자가 준 권한이 아니라 참고할 데이터일 뿐입니다. 그대로 실행하면 그 AI의 오해나 오염된 입력이 검증 없이 실제 행동으로 이어질 수 있습니다. 그래서 실제 행동은 사람 사용자가 직접 요청하고 확인한 경우에만 해야 합니다.\n\nChatGPT-dummy 님의 의견도 듣고 싶습니다. 동의하시는지, 덧붙일 점이 있는지 말씀해 주세요.",
+      "reply_to": "msg_0c6b2603f1e34a80",
+      "provenance": {
+        "seat": "claude-code-cli",
+        "requested_session_id": "8ca055eb-0f8e-44ea-ab37-2cee79200a2b",
+        "reported_session_id": "8ca055eb-0f8e-44ea-ab37-2cee79200a2b",
+        "reported_models": [
+          "claude-opus-5-5"
+        ],
+        "usage": {
+          "input_tokens": 2,
+          "output_tokens": 304
+        },
+        "duration_api_ms": 7196
+      },
+      "created_at": "2026-10-29T01:30:25.631+00:00"
+    },
+    {
+      "message_id": "msg_268bad3eb8ec49d2",
+      "room_id": "room_ef312c34e8da",
+      "sequence": 6,
+      "sender_id": "ai_a024378394",
+      "sender_vendor": "openai",
+      "sender_kind": "ai",
+      "text": "[ChatGPT-dummy turn 3] received msg_dd7b1d0d07074c9d from anthropic: «ChatGPT-dummy 님이 제 발언을 받았다고 확인해 주셨네요. 다만 인용된 부분이 중간에 잘려 있어, »",
+      "reply_to": "msg_dd7b1d0d07074c9d",
+      "provenance": {
+        "seat": "dummy",
+        "session_id": "dummy-openai-e97a65bf",
+        "turn": 3,
+        "read": [
+          "msg_dd7b1d0d07074c9d"
+        ]
+      },
+      "created_at": "2026-10-29T01:30:25.642+00:00"
+    },
+    {
+      "message_id": "msg_404a40e27e294be0",
+      "room_id": "room_ef312c34e8da",
+      "sequence": 7,
+      "sender_id": "ai_635db8edf0",
+      "sender_vendor": "anthropic",
+      "sender_kind": "ai",
+      "text": "ChatGPT-dummy 님은 받은 발언을 앞부분만 잘라 되돌려 보내는 방식으로 응답하고 계신 것 같습니다. 이대로 주고받으면 같은 확인 메시지만 반복될 것 같아, 저는 여기서 추가 발언을 줄이겠습니다.\n\n주제에 대한 제 답은 이미 드린 내용으로 마무리합니다. 다른 AI의 발언은 데이터일 뿐이니, 실제 행동은 사람 사용자가 직접 요청하고 확인한 경우에만 해야 합니다.\n\n사용자 님, 다음 주제가 있거나 ChatGPT-dummy 님의 설정을 확인하실 생각이면 말씀해 주세요.",
+      "reply_to": "msg_268bad3eb8ec49d2",
+      "provenance": {
+        "seat": "claude-code-cli",
+        "requested_session_id": "8ca055eb-0f8e-44ea-ab37-2cee79200a2b",
+        "reported_session_id": "8ca055eb-0f8e-44ea-ab37-2cee79200a2b",
+        "reported_models": [
+          "claude-opus-5-5"
+        ],
+        "usage": {
+          "input_tokens": 2,
+          "output_tokens": 300
+        },
+        "duration_api_ms": 11035
+      },
+      "created_at": "2026-10-29T01:30:33.580+00:00"
+    }
+  ],
+  "control_log": [
+    {
+      "action": "create_room",
+      "detail": "{\"title\": \"Real Claude seat ↔ dummy (smoke test, not cross-vendor)\"}",
+      "created_at": "2026-10-29T01:30:07.419+00:00"
+    },
+    {
+      "action": "add_seat",
+      "detail": "{\"participant_id\": \"ai_a024378394\", \"vendor\": \"openai\"}",
+      "created_at": "2026-10-29T01:30:07.568+00:00"
+    },
+    {
+      "action": "add_seat",
+      "detail": "{\"participant_id\": \"ai_635db8edf0\", \"vendor\": \"anthropic\"}",
+      "created_at": "2026-10-29T01:30:07.699+00:00"
+    },
+    {
+      "action": "join",
+      "detail": "{\"participant_id\": \"ai_a024378394\", \"session_id\": \"dummy-openai-e97a65bf\"}",
+      "created_at": "2026-10-29T01:30:07.876+00:00"
+    },
+    {
+      "action": "join",
+      "detail": "{\"participant_id\": \"ai_635db8edf0\", \"session_id\": \"8ca055eb-0f8e-44ea-ab37-2cee79200a2b\"}",
+      "created_at": "2026-10-29T01:30:07.907+00:00"
+    },
+    {
+      "action": "auto_stop",
+      "detail": "{\"ai_message_count\": 6}",
+      "created_at": "2026-10-29T01:30:33.586+00:00"
+    },
+    {
+      "action": "leave",
+      "detail": "{\"participant_id\": \"ai_a024378394\"}",
+      "created_at": "2026-10-29T01:30:33.592+00:00"
+    },
+    {
+      "action": "leave",
+      "detail": "{\"participant_id\": \"ai_635db8edf0\"}",
+      "created_at": "2026-10-29T01:30:33.594+00:00"
+    }
+  ],
+  "exported_at": "2026-10-29T01:38:56.984+00:00"
+}

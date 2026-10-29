@@ -1,0 +1,289 @@
+{
+  "room": {
+    "room_id": "room_28e210a8d312",
+    "title": "Userscript on MOCK chatgpt page ↔ dummy",
+    "status": "stopped",
+    "floor_participant_id": "ai_7b5cbbb28d",
+    "max_ai_messages": 8,
+    "ai_message_count": 8,
+    "last_sequence": 9,
+    "created_at": "2026-10-29T01:34:43.069+00:00",
+    "version": 0
+  },
+  "participants": [
+    {
+      "participant_id": "hu_6e05b99504",
+      "kind": "human",
+      "display_name": "User",
+      "vendor": "human",
+      "model": null,
+      "transport": "board-ui",
+      "session_id": null,
+      "session_meta": null,
+      "status": "offline",
+      "last_seen": "2026-10-29T01:34:43+00:00",
+      "cursor": 1,
+      "seat_order": 1
+    },
+    {
+      "participant_id": "ai_7b5cbbb28d",
+      "kind": "ai",
+      "display_name": "ChatGPT-web-MOCK",
+      "vendor": "openai",
+      "model": null,
+      "transport": "web-userscript:chatgpt",
+      "session_id": "chatgpt:/c/mock-conv-123",
+      "session_meta": {
+        "page_url": "https://chatgpt.com/c/mock-conv-123",
+        "title": "Mock ChatGPT-like page (test fixture)",
+        "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+      },
+      "status": "left",
+      "last_seen": "2026-10-29T01:35:00+00:00",
+      "cursor": 8,
+      "seat_order": 2
+    },
+    {
+      "participant_id": "ai_d6ea020af0",
+      "kind": "ai",
+      "display_name": "Claude-dummy",
+      "vendor": "anthropic",
+      "model": "dummy-echo-v1",
+      "transport": "dummy",
+      "session_id": "dummy-anthropic-1a5b25c7",
+      "session_meta": {
+        "note": "deterministic test seat, no model"
+      },
+      "status": "left",
+      "last_seen": "2026-10-29T01:35:00+00:00",
+      "cursor": 9,
+      "seat_order": 3
+    }
+  ],
+  "messages": [
+    {
+      "message_id": "msg_38ffcbd376fe4ced",
+      "room_id": "room_28e210a8d312",
+      "sequence": 1,
+      "sender_id": "hu_6e05b99504",
+      "sender_vendor": "human",
+      "sender_kind": "human",
+      "text": "userscript 경로 테스트",
+      "reply_to": null,
+      "provenance": null,
+      "created_at": "2026-10-29T01:34:43.533+00:00"
+    },
+    {
+      "message_id": "msg_d4b659a689a14117",
+      "room_id": "room_28e210a8d312",
+      "sequence": 2,
+      "sender_id": "ai_7b5cbbb28d",
+      "sender_vendor": "openai",
+      "sender_kind": "ai",
+      "text": "MOCK-WEB answer 1: I read msg_38ffcbd376fe4ced (271 chars)",
+      "reply_to": "msg_38ffcbd376fe4ced",
+      "provenance": {
+        "seat": "web-userscript:chatgpt",
+        "page_conversation": "chatgpt:/c/mock-conv-123",
+        "page_url": "https://chatgpt.com/c/mock-conv-123",
+        "assistant_turn_index": 0,
+        "dom_message_id": "mock-1"
+      },
+      "created_at": "2026-10-29T01:34:48.340+00:00"
+    },
+    {
+      "message_id": "msg_fb7bb0d9d6c74a24",
+      "room_id": "room_28e210a8d312",
+      "sequence": 3,
+      "sender_id": "ai_d6ea020af0",
+      "sender_vendor": "anthropic",
+      "sender_kind": "ai",
+      "text": "[anthropic turn 1] received msg_d4b659a689a14117 from openai: «MOCK-WEB answer 1: I read msg_38ffcbd376fe4ced (271 chars)»",
+      "reply_to": "msg_d4b659a689a14117",
+      "provenance": {
+        "seat": "dummy",
+        "session_id": "dummy-anthropic-1a5b25c7",
+        "turn": 1,
+        "read": [
+          "msg_38ffcbd376fe4ced",
+          "msg_d4b659a689a14117"
+        ]
+      },
+      "created_at": "2026-10-29T01:34:48.358+00:00"
+    },
+    {
+      "message_id": "msg_7fbf3e85141f4a27",
+      "room_id": "room_28e210a8d312",
+      "sequence": 4,
+      "sender_id": "ai_7b5cbbb28d",
+      "sender_vendor": "openai",
+      "sender_kind": "ai",
+      "text": "MOCK-WEB answer 2: I read msg_fb7bb0d9d6c74a24 (396 chars)",
+      "reply_to": "msg_fb7bb0d9d6c74a24",
+      "provenance": {
+        "seat": "web-userscript:chatgpt",
+        "page_conversation": "chatgpt:/c/mock-conv-123",
+        "page_url": "https://chatgpt.com/c/mock-conv-123",
+        "assistant_turn_index": 1,
+        "dom_message_id": "mock-2"
+      },
+      "created_at": "2026-10-29T01:34:52.267+00:00"
+    },
+    {
+      "message_id": "msg_639a3467fe0845a8",
+      "room_id": "room_28e210a8d312",
+      "sequence": 5,
+      "sender_id": "ai_d6ea020af0",
+      "sender_vendor": "anthropic",
+      "sender_kind": "ai",
+      "text": "[anthropic turn 2] received msg_7fbf3e85141f4a27 from openai: «MOCK-WEB answer 2: I read msg_fb7bb0d9d6c74a24 (396 chars)»",
+      "reply_to": "msg_7fbf3e85141f4a27",
+      "provenance": {
+        "seat": "dummy",
+        "session_id": "dummy-anthropic-1a5b25c7",
+        "turn": 2,
+        "read": [
+          "msg_7fbf3e85141f4a27"
+        ]
+      },
+      "created_at": "2026-10-29T01:34:52.285+00:00"
+    },
+    {
+      "message_id": "msg_46807a255f8a4d40",
+      "room_id": "room_28e210a8d312",
+      "sequence": 6,
+      "sender_id": "ai_7b5cbbb28d",
+      "sender_vendor": "openai",
+      "sender_kind": "ai",
+      "text": "MOCK-WEB answer 3: I read msg_639a3467fe0845a8 (396 chars)",
+      "reply_to": "msg_639a3467fe0845a8",
+      "provenance": {
+        "seat": "web-userscript:chatgpt",
+        "page_conversation": "chatgpt:/c/mock-conv-123",
+        "page_url": "https://chatgpt.com/c/mock-conv-123",
+        "assistant_turn_index": 2,
+        "dom_message_id": "mock-3"
+      },
+      "created_at": "2026-10-29T01:34:56.191+00:00"
+    },
+    {
+      "message_id": "msg_0e228962ccdb4eec",
+      "room_id": "room_28e210a8d312",
+      "sequence": 7,
+      "sender_id": "ai_d6ea020af0",
+      "sender_vendor": "anthropic",
+      "sender_kind": "ai",
+      "text": "[anthropic turn 3] received msg_46807a255f8a4d40 from openai: «MOCK-WEB answer 3: I read msg_639a3467fe0845a8 (396 chars)»",
+      "reply_to": "msg_46807a255f8a4d40",
+      "provenance": {
+        "seat": "dummy",
+        "session_id": "dummy-anthropic-1a5b25c7",
+        "turn": 3,
+        "read": [
+          "msg_46807a255f8a4d40"
+        ]
+      },
+      "created_at": "2026-10-29T01:34:56.209+00:00"
+    },
+    {
+      "message_id": "msg_f7d39ee3e10a4040",
+      "room_id": "room_28e210a8d312",
+      "sequence": 8,
+      "sender_id": "ai_7b5cbbb28d",
+      "sender_vendor": "openai",
+      "sender_kind": "ai",
+      "text": "MOCK-WEB answer 4: I read msg_0e228962ccdb4eec (396 chars)",
+      "reply_to": "msg_0e228962ccdb4eec",
+      "provenance": {
+        "seat": "web-userscript:chatgpt",
+        "page_conversation": "chatgpt:/c/mock-conv-123",
+        "page_url": "https://chatgpt.com/c/mock-conv-123",
+        "assistant_turn_index": 3,
+        "dom_message_id": "mock-4"
+      },
+      "created_at": "2026-10-29T01:35:00.117+00:00"
+    },
+    {
+      "message_id": "msg_3616e317a6154f58",
+      "room_id": "room_28e210a8d312",
+      "sequence": 9,
+      "sender_id": "ai_d6ea020af0",
+      "sender_vendor": "anthropic",
+      "sender_kind": "ai",
+      "text": "[anthropic turn 4] received msg_f7d39ee3e10a4040 from openai: «MOCK-WEB answer 4: I read msg_0e228962ccdb4eec (396 chars)»",
+      "reply_to": "msg_f7d39ee3e10a4040",
+      "provenance": {
+        "seat": "dummy",
+        "session_id": "dummy-anthropic-1a5b25c7",
+        "turn": 4,
+        "read": [
+          "msg_f7d39ee3e10a4040"
+        ]
+      },
+      "created_at": "2026-10-29T01:35:00.132+00:00"
+    }
+  ],
+  "control_log": [
+    {
+      "action": "create_room",
+      "detail": "{\"title\": \"Userscript on MOCK chatgpt page ↔ dummy\"}",
+      "created_at": "2026-10-29T01:34:43.073+00:00"
+    },
+    {
+      "action": "add_seat",
+      "detail": "{\"participant_id\": \"ai_7b5cbbb28d\", \"vendor\": \"openai\"}",
+      "created_at": "2026-10-29T01:34:43.240+00:00"
+    },
+    {
+      "action": "add_seat",
+      "detail": "{\"participant_id\": \"ai_d6ea020af0\", \"vendor\": \"anthropic\"}",
+      "created_at": "2026-10-29T01:34:43.374+00:00"
+    },
+    {
+      "action": "join",
+      "detail": "{\"participant_id\": \"ai_d6ea020af0\", \"session_id\": \"dummy-anthropic-1a5b25c7\"}",
+      "created_at": "2026-10-29T01:34:43.601+00:00"
+    },
+    {
+      "action": "join",
+      "detail": "{\"participant_id\": \"ai_7b5cbbb28d\", \"session_id\": \"chatgpt:/\"}",
+      "created_at": "2026-10-29T01:34:44.410+00:00"
+    },
+    {
+      "action": "join",
+      "detail": "{\"participant_id\": \"ai_7b5cbbb28d\", \"session_id\": \"chatgpt:/c/mock-conv-123\"}",
+      "created_at": "2026-10-29T01:34:48.356+00:00"
+    },
+    {
+      "action": "join",
+      "detail": "{\"participant_id\": \"ai_7b5cbbb28d\", \"session_id\": \"chatgpt:/c/mock-conv-123\"}",
+      "created_at": "2026-10-29T01:34:52.283+00:00"
+    },
+    {
+      "action": "join",
+      "detail": "{\"participant_id\": \"ai_7b5cbbb28d\", \"session_id\": \"chatgpt:/c/mock-conv-123\"}",
+      "created_at": "2026-10-29T01:34:56.207+00:00"
+    },
+    {
+      "action": "join",
+      "detail": "{\"participant_id\": \"ai_7b5cbbb28d\", \"session_id\": \"chatgpt:/c/mock-conv-123\"}",
+      "created_at": "2026-10-29T01:35:00.130+00:00"
+    },
+    {
+      "action": "auto_stop",
+      "detail": "{\"ai_message_count\": 8}",
+      "created_at": "2026-10-29T01:35:00.138+00:00"
+    },
+    {
+      "action": "leave",
+      "detail": "{\"participant_id\": \"ai_d6ea020af0\"}",
+      "created_at": "2026-10-29T01:35:00.147+00:00"
+    },
+    {
+      "action": "leave",
+      "detail": "{\"participant_id\": \"ai_7b5cbbb28d\"}",
+      "created_at": "2026-10-29T01:35:00.233+00:00"
+    }
+  ],
+  "exported_at": "2026-10-29T01:38:57.269+00:00"
+}

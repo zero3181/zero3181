@@ -1,0 +1,30 @@
+Room room_3eb8a722eebe  "멀티 대화 데모 (실제 Claude 1 + 더미 3)"  status=stopped
+
+Participants:
+  hu_fe2f6c9c88    human User           vendor=human      model=None  transport=board-ui  session_id=None
+  ai_fbb8c82ad0    ai    ChatGPT-dummy  vendor=openai     model=dummy-echo-v1  transport=dummy  session_id=dummy-openai-7f77d386
+  ai_730b13d127    ai    Claude         vendor=anthropic  model=claude-opus-5-5  transport=claude-code-cli  session_id=a07223e4-1c8a-45d7-bf8d-1376c4c8d28f
+  ai_0b0885374d    ai    Gemini-dummy   vendor=google     model=dummy-echo-v1  transport=dummy  session_id=dummy-google-bd276b6b
+  ai_94b9c2ddb8    ai    Meta Muse-dummy vendor=meta       model=dummy-echo-v1  transport=dummy  session_id=dummy-meta-fb23d1d0
+
+Message log (seq | message_id | sender -> reply_to sender):
+    1 | msg_b6edfa0e865d4869 | User/human     -> -  
+    2 | msg_502de82853ae4b8d | ChatGPT-dummy/openai    -> msg_b6edfa0e865d4869 (User/human)  
+    3 | msg_d43223884b9947f3 | Claude/anthropic -> msg_502de82853ae4b8d (ChatGPT-dummy/openai)  a07223e4-1c8a-45d7-bf8d-1376c4c8d28f
+    4 | msg_4e1ee21e863c4a97 | Gemini-dummy/google    -> msg_d43223884b9947f3 (Claude/anthropic)  
+    5 | msg_6c8236c89f5e45f3 | Meta Muse-dummy/meta      -> msg_4e1ee21e863c4a97 (Gemini-dummy/google)  
+    6 | msg_b49f1b8af8dc4ee2 | ChatGPT-dummy/openai    -> msg_6c8236c89f5e45f3 (Meta Muse-dummy/meta)  
+    7 | msg_f5e5bc66256e46b1 | Claude/anthropic -> msg_b49f1b8af8dc4ee2 (ChatGPT-dummy/openai)  a07223e4-1c8a-45d7-bf8d-1376c4c8d28f
+    8 | msg_ddd1ae283e674c86 | Gemini-dummy/google    -> msg_f5e5bc66256e46b1 (Claude/anthropic)  
+    9 | msg_6f1a394081ce49d7 | Meta Muse-dummy/meta      -> msg_ddd1ae283e674c86 (Gemini-dummy/google)  
+
+Checks:
+  [PASS] two_or_more_ai_vendors: vendors=['anthropic', 'google', 'meta', 'openai']
+  [PASS] distinct_session_ids: session_ids=['dummy-google-bd276b6b', 'dummy-meta-fb23d1d0', 'a07223e4-1c8a-45d7-bf8d-1376c4c8d28f', 'dummy-openai-7f77d386']
+  [FAIL] no_dummy_seats: dummy seats: Gemini-dummy, Meta Muse-dummy, ChatGPT-dummy
+  [PASS] every_ai_reply_targets_other_participant: 8 AI messages ok
+  [FAIL] cross_vendor_round_trips>=10: mode=multi(4 seats) round_trips=1 edges={'openai->anthropic': 2, 'anthropic->google': 2, 'google->meta': 2, 'meta->openai': 1}
+  [PASS] vendor_response_ids_unique: 0 vendor response ids
+  [PASS] provenance_session_matches_seat: ok
+
+RESULT: NOT PASSED

@@ -6,3 +6,7 @@ dist
 *.log
 .DS_Store
 .vscode
+
+# meeting-board
+*.sqlite3
+__pycache__/

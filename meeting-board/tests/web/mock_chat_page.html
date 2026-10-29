@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Mock ChatGPT-like page (test fixture)</title></head>
+<body>
+<!-- Test fixture only: mimics the DOM hooks the userscript uses on chatgpt.com. It is NOT ChatGPT. -->
+<div id="thread"></div>
+<div id="prompt-textarea" contenteditable="true" style="border:1px solid #999;min-height:40px"></div>
+<button data-testid="send-button" id="send">send</button>
+<script>
+let n = 0;
+document.getElementById('send').onclick = () => {
+  const box = document.getElementById('prompt-textarea');
+  const prompt = box.innerText; box.innerText = '';
+  const u = document.createElement('div'); u.setAttribute('data-message-author-role', 'user'); u.innerText = prompt;
+  document.getElementById('thread').appendChild(u);
+  const stop = document.createElement('button'); stop.setAttribute('data-testid', 'stop-button'); document.body.appendChild(stop);
+  const a = document.createElement('div'); a.setAttribute('data-message-author-role', 'assistant');
+  a.setAttribute('data-message-id', 'mock-' + (++n));
+  document.getElementById('thread').appendChild(a);
+  const ids = [...prompt.matchAll(/id="(msg_[0-9a-f]+)"/g)].map(m => m[1]);
+  const full = `MOCK-WEB answer ${n}: I read ${ids.join(',')} (${prompt.length} chars)`;
+  let i = 0; const t = setInterval(() => { i += 8; a.innerText = full.slice(0, i);
+    if (i >= full.length) { clearInterval(t); stop.remove(); history.replaceState(null, '', '/c/mock-conv-123'); } }, 80);
+};
+</script></body></html>
