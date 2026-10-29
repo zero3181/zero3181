@@ -243,15 +243,17 @@ class SeatAdapter:
                 self.log(f"[{self.vendor}] read {len(msgs)} message(s): "
                          + ", ".join(f"{m.message_id}<{m.sender_vendor}>" for m in msgs))
                 reply = None
-                for attempt in range(3):
+                for attempt in range(MODEL_ATTEMPTS):
                     try:
                         reply = self.respond(msgs)
                         break
                     except Exception as e:
-                        self.log(f"[{self.vendor}] model call failed (attempt {attempt + 1}/3): {e}")
-                        time.sleep(3 * (attempt + 1))
+                        self.log(f"[{self.vendor}] model call failed (attempt {attempt + 1}/{MODEL_ATTEMPTS}): {e}")
+                        if attempt + 1 < MODEL_ATTEMPTS:
+                            # Vendor rate limits (429) and overload (503) usually clear within a minute.
+                            time.sleep(MODEL_BACKOFF[min(attempt, len(MODEL_BACKOFF) - 1)])
                 if reply is None:
-                    raise RuntimeError(f"[{self.vendor}] model failed 3 times; seat leaving")
+                    raise RuntimeError(f"[{self.vendor}] model failed {MODEL_ATTEMPTS} times; seat leaving")
                 if not reply.text.strip():
                     reply.text = "(빈 응답)"
                 try:
@@ -270,6 +272,10 @@ class SeatAdapter:
         finally:
             self.stop()
         return replies
+
+
+MODEL_ATTEMPTS = 6
+MODEL_BACKOFF = (5, 15, 30, 60, 60)  # seconds between model attempts
 
 
 def http_json(url: str, body: dict, headers: dict[str, str], timeout: float = 120) -> dict:

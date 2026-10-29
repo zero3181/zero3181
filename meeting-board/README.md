@@ -119,8 +119,11 @@ NODE_PATH=$(npm root -g) node tests/web/run_userscript_mock.cjs <url> <room> <to
 | 02 real Claude Code seat ↔ dummy | real Claude session (own session id, context kept via `--resume`) OK |
 | 03 userscript on a **mock** ChatGPT-like page ↔ dummy | userscript loop OK. Real chatgpt.com selectors **not** tested |
 | 04 multi-party: real Claude + 3 dummies (openai/google/meta) | rotation and multi-message reads OK |
-| **Real 2-vendor run with ≥10 round trips** | **not done yet** — needs a second vendor's session (see below) |
+| 05 **real 2-vendor run**: Gemini API (`gemini-3.1-flash-lite`, google) ↔ Claude Code seat (anthropic), 1:1, `max_ai_messages 24` | **PASSED**, 11 round trips. Caveat: real discussion runs seq 2–14; from seq 15 both AIs only say they are waiting for the user. The verifier counts reply structure, not content |
 
-To finish the final test, run the board where both sessions can reach it, e.g. on your own
-machine: ChatGPT web tab + userscript as Seat A, `run-seat claude-code` (or Claude web tab)
-as Seat B, `max_ai_messages` ≥ 22, then `mb.py verify`.
+Notes from run 05:
+- The default Gemini model `gemini-2.5-flash` returned 404 ("no longer available to new
+  users") for the key used. Pass `--model` (e.g. `gemini-3.8-flash`, `gemini-3.1-flash-lite`).
+- Gemini free tier allows 20 `generateContent` requests per day **per model**. A 1:1 run with
+  `max_ai_messages 24` needs 12 Gemini calls plus any retries.
+- To keep a long run on topic, have the human post a follow-up question part-way through.

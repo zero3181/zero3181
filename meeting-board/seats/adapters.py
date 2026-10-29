@@ -154,8 +154,14 @@ class APISeat(SeatAdapter):
                                              "history": "kept in this seat process only"}
 
     def respond(self, messages: list[BoardMessage]) -> Reply:
+        # Add the turn to history only after the call succeeds, so a retry does not
+        # send the same meeting text twice.
         self.history.append(("user", frame_for_model(messages)))
-        text, prov = getattr(self, "_call_" + self.provider.replace("-", "_"))()
+        try:
+            text, prov = getattr(self, "_call_" + self.provider.replace("-", "_"))()
+        except Exception:
+            self.history.pop()
+            raise
         self.history.append(("assistant", text))
         prov.update({"seat": "vendor-api", "provider": self.provider, "conversation": self.session_id})
         return Reply(text.strip(), prov)

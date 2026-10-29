@@ -61,6 +61,18 @@ class SeatTest(unittest.TestCase):
         self.assertIn("msg_3", SEEN[1]["body"]["messages"][-1]["content"])
         self.assertEqual(r2.text, "fake reply 2")
 
+    def test_failed_call_does_not_duplicate_history_on_retry(self):
+        SEEN.clear()
+        seat = APISeat(None, provider="openai-compatible", api_key="k",
+                       base_url="http://127.0.0.1:9/v1", vendor="x", model="m")
+        with self.assertRaises(Exception):
+            seat.respond([msg(1, "hello")])  # nothing listens on port 9
+        self.assertEqual(seat.history, [])
+        seat.base_url = self.base
+        seat.respond([msg(1, "hello")])
+        roles = [m["role"] for m in SEEN[0]["body"]["messages"]]
+        self.assertEqual(roles, ["system", "user"])
+
     def test_openai_compatible_requires_base_url_and_custom_vendor(self):
         SEEN.clear()
         seat = APISeat(None, provider="openai-compatible", api_key="k", base_url=self.base,
