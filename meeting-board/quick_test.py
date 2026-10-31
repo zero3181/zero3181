@@ -54,6 +54,7 @@ def main() -> int:
     ap.add_argument("--no-followup", action="store_true", help="사회자 질문을 던지지 않음")
     ap.add_argument("--preset", default="free", choices=list(PRESETS),
                     help="토론 방식: free=자유, roles=역할 분담, procon1=찬반 1:1, procon2=찬반 2:2")
+    ap.add_argument("--no-summary", action="store_true", help="마지막 Claude 전체 요약을 하지 않음")
     ap.add_argument("--min-round-trips", type=int, default=10)
     ap.add_argument("--timeout-min", type=float, help="전체 제한 시간(분). 기본: AI 발언당 2분, 최소 30분")
     a = ap.parse_args()
@@ -95,6 +96,7 @@ def main() -> int:
         d = Debate(base=base, kinds=kinds, topic=a.topic, out_dir=out,
                    models={"chatgpt": a.chatgpt_model, "gemini": a.gemini_model, "claude": a.claude_model},
                    max_messages=a.messages, followups=[] if a.no_followup else a.followup, roles=roles,
+                   summary=not a.no_summary,
                    min_round_trips=a.min_round_trips, timeout_min=a.timeout_min, on_message=show,
                    on_room=lambda rid, ct, ut: print(f"브라우저로 보기: {base}/#room={rid}&ct={ct}&ut={ut}\n"))
         try:

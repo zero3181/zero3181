@@ -2,8 +2,8 @@
 
     RUNNER_PASSWORD=... python runner.py [--port 8790] [--data ./data]
 
-Open http://<host>:8790, log in (any user name + RUNNER_PASSWORD), type a topic, pick the
-participants, press 시작. The debate shows live on the page; results are kept under
+Open http://<host>:8790, enter RUNNER_PASSWORD (kept for 30 days per device), type a topic,
+pick the participants, press 시작. The debate shows live on the page; results are kept under
 <data>/results/. One debate runs at a time.
 
 The board server is started by this process on 127.0.0.1 only; just this page is exposed.
@@ -14,13 +14,14 @@ not port-forward it to the internet.
 from __future__ import annotations
 
 import argparse
-import base64
+import hashlib
 import hmac
 import html
 import ipaddress
 import json
 import os
 import re
+import secrets
 import subprocess
 import sys
 import threading
@@ -129,6 +130,71 @@ class LoginGuard:
 
 GUARD = LoginGuard()
 
+SESSION_COOKIE = "debate_session"
+SESSION_DAYS = 30
+
+
+def _sha(s: str) -> str:
+    return hashlib.sha256(s.encode()).hexdigest()
+
+
+class Sessions:
+    """Login sessions kept for SESSION_DAYS, saved under the data folder so a container restart
+    does not log anyone out. Only a hash of each token is stored. Every session is tied to the
+    current RUNNER_PASSWORD: changing the password logs out all devices."""
+
+    def __init__(self, path: Path):
+        self.path, self.lock = path, threading.Lock()
+        try:
+            self.items: dict[str, dict] = json.loads(path.read_text())
+        except (OSError, ValueError):
+            self.items = {}
+
+    def _pw(self) -> str:
+        return _sha("pw:" + PASSWORD)[:16]
+
+    def _save(self) -> None:
+        now = time.time()
+        self.items = {k: v for k, v in self.items.items() if v["exp"] > now and v["pw"] == self._pw()}
+        tmp = self.path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(self.items))
+        os.chmod(tmp, 0o600)
+        tmp.replace(self.path)
+
+    def create(self) -> str:
+        token = secrets.token_urlsafe(32)
+        with self.lock:
+            self.items[_sha(token)] = {"exp": time.time() + SESSION_DAYS * 86400, "pw": self._pw()}
+            self._save()
+        return token
+
+    def valid(self, token: str | None) -> bool:
+        if not token:
+            return False
+        with self.lock:
+            v = self.items.get(_sha(token))
+            return bool(v and v["exp"] > time.time() and v["pw"] == self._pw())
+
+    def drop(self, token: str | None) -> None:
+        if token:
+            with self.lock:
+                self.items.pop(_sha(token), None)
+                self._save()
+
+
+def login_page(err: str = "") -> bytes:
+    msg = f'<p class="bad">{html.escape(err)}</p>' if err else ""
+    # The hidden user name field lets password managers (Safari/iCloud Keychain, Chrome) save the password.
+    return page("로그인", f"""<h1>AI 토론방</h1>{msg}
+<form method="post" action="/login" class="card">
+<input type="text" name="username" value="ai-debate" autocomplete="username" style="display:none" tabindex="-1" aria-hidden="true">
+<p><label for="pw">비밀번호</label></p>
+<p><input id="pw" type="password" name="password" autocomplete="current-password" required autofocus
+  style="width:100%;box-sizing:border-box;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg)"></p>
+<p><button>들어가기</button></p>
+<p class="muted">한 번 들어가면 이 기기에서는 {SESSION_DAYS}일 동안 다시 묻지 않습니다.</p>
+</form>""")
+
 
 def client_id(peer: str, headers) -> str:
     """The real client address. Behind a reverse proxy on the NAS the peer is a private address,
@@ -169,8 +235,34 @@ button{{font:inherit;padding:8px 18px;border-radius:8px;border:0;background:var(
 label{{margin-right:14px;white-space:nowrap}}
 .role{{font-size:.8rem;padding:1px 7px;border-radius:9px;background:var(--line)}}
 select,input[type=number]{{font:inherit;padding:4px 6px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--fg)}}
+button.link{{background:none;color:var(--accent);padding:4px 0;text-decoration:underline}}
 .seatrow{{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0}} a{{color:var(--accent)}} pre{{white-space:pre-wrap;font-size:.8rem}}
 </style></head><body><main>{body}</main></body></html>""".encode()
+
+
+def debate_text(msgs, roles: dict | None = None, header: str = "") -> str:
+    """Plain-text version of a debate for copying or saving."""
+    out = [header.strip(), ""] if header.strip() else []
+    for seq, who, vendor, text in msgs:
+        role = (roles or {}).get(who)
+        out.append(f"[{seq}] {who}" + (f" ({role})" if role else "") + (" · 사회자/사용자" if vendor == "human" else ""))
+        out += [text, ""]
+    return "\n".join(out).strip() + "\n"
+
+
+def copy_button(text: str, download: str = "") -> str:
+    """A '전체 복사' button. navigator.clipboard needs HTTPS, so plain-HTTP LAN access falls back
+    to selecting a hidden textarea and execCommand('copy')."""
+    dl = f' · <a href="{download}">텍스트 파일로 받기</a>' if download else ""
+    return (f'<p><button type="button" onclick="copyAll(this)">전체 복사</button>{dl}</p>'
+            f'<textarea id="alltext" readonly style="position:absolute;left:-9999px;top:0">{html.escape(text)}</textarea>'
+            """<script>
+function copyAll(btn){
+  var t=document.getElementById('alltext'), done=function(){btn.textContent='복사됨';setTimeout(function(){btn.textContent='전체 복사'},2000)};
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t.value).then(done,fallback)}else{fallback()}
+  function fallback(){t.select();t.setSelectionRange(0,t.value.length);try{document.execCommand('copy');done()}catch(e){btn.textContent='복사 실패'}}
+}
+</script>""")
 
 
 def render_messages(msgs, roles: dict | None = None) -> str:
@@ -189,27 +281,38 @@ def make_handler(state: State):
         def log_message(self, *a):
             pass
 
+        def _token(self) -> str | None:
+            for part in (self.headers.get("Cookie") or "").split(";"):
+                k, _, v = part.strip().partition("=")
+                if k == SESSION_COOKIE:
+                    return v
+            return None
+
         def _authed(self) -> bool:
+            if state.sessions.valid(self._token()):
+                return True
+            self._redirect("/login")
+            return False
+
+        def _login(self, form: dict) -> None:
             client = client_id(self.client_address[0], self.headers)
             wait = GUARD.wait_seconds(client)
             if wait:
-                self._send(page("잠김", f"<p>비밀번호를 여러 번 틀려 잠시 잠겼습니다. "
-                                       f"{wait // 60 + 1}분 뒤에 다시 시도하세요.</p>"), code=429)
-                return False
-            h = self.headers.get("Authorization", "")
-            if h.startswith("Basic "):
-                try:
-                    _, _, pw = base64.b64decode(h[6:]).decode().partition(":")
-                    ok = hmac.compare_digest(pw.encode(), PASSWORD.encode())
-                except Exception:
-                    ok = False
-                if ok:
-                    return True
+                return self._send(login_page(f"비밀번호를 여러 번 틀려 잠시 잠겼습니다. "
+                                             f"{wait // 60 + 1}분 뒤에 다시 시도하세요."), code=429)
+            pw = (form.get("password") or [""])[0]
+            if not hmac.compare_digest(pw.encode(), PASSWORD.encode()):
                 GUARD.failed(client)
-            self.send_response(401)
-            self.send_header("WWW-Authenticate", 'Basic realm="AI debate"')
+                return self._send(login_page("비밀번호가 맞지 않습니다."), code=401)
+            token = state.sessions.create()
+            # Secure only when the browser reached us over HTTPS (NAS reverse proxy); plain-HTTP LAN
+            # access would otherwise never get the cookie back.
+            secure = "; Secure" if self.headers.get("X-Forwarded-Proto", "").lower() == "https" else ""
+            self.send_response(303)
+            self.send_header("Set-Cookie", f"{SESSION_COOKIE}={token}; Path=/; Max-Age={SESSION_DAYS * 86400}; "
+                                           f"HttpOnly; SameSite=Lax{secure}")
+            self.send_header("Location", "/")
             self.end_headers()
-            return False
 
         def _send(self, body: bytes, ctype: str = "text/html; charset=utf-8", code: int = 200):
             self.send_response(code)
@@ -225,9 +328,11 @@ def make_handler(state: State):
             self.end_headers()
 
         def do_GET(self):
+            path = urllib.parse.urlparse(self.path).path
+            if path == "/login":
+                return self._send(login_page())
             if not self._authed():
                 return
-            path = urllib.parse.urlparse(self.path).path
             if path == "/":
                 return self._send(self.home())
             parts = path.strip("/").split("/")
@@ -235,14 +340,30 @@ def make_handler(state: State):
                 d = state.data / "results" / parts[1]
                 if len(parts) == 2:
                     return self._send(self.run_page(parts[1], d))
+                if len(parts) == 3 and parts[2] == "debate.txt" and (d / "transcript.json").is_file():
+                    body = self.run_text(parts[1], d).encode()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/plain; charset=utf-8")
+                    self.send_header("Content-Disposition", f'attachment; filename="ai-debate-{parts[1]}.txt"')
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    return self.wfile.write(body)
                 if len(parts) == 3 and parts[2] in RUN_FILES and (d / parts[2]).is_file():
                     return self._send((d / parts[2]).read_bytes(), RUN_FILES[parts[2]] + "; charset=utf-8")
             self._send(page("없음", "<p>페이지가 없습니다. <a href='/'>처음으로</a></p>"), code=404)
 
         def do_POST(self):
+            n = int(self.headers.get("Content-Length") or 0)
+            if self.path == "/login":
+                return self._login(urllib.parse.parse_qs(self.rfile.read(min(n, 4096)).decode(errors="replace")))
             if not self._authed():
                 return
-            n = int(self.headers.get("Content-Length") or 0)
+            if self.path == "/logout":
+                state.sessions.drop(self._token())
+                self.send_response(303)
+                self.send_header("Set-Cookie", f"{SESSION_COOKIE}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax")
+                self.send_header("Location", "/login")
+                return self.end_headers()
             if n > MAX_FORM_BYTES:
                 self.rfile.read(n)
                 return self._redirect("/?err=" + urllib.parse.quote(
@@ -269,7 +390,8 @@ def make_handler(state: State):
         def home(self) -> bytes:
             q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
             err = (q.get("err") or [""])[0]
-            body = ["<h1>AI 토론방</h1>"]
+            body = ['<form method="post" action="/logout" style="float:right">'
+                    '<button class="link">로그아웃</button></form><h1>AI 토론방</h1>']
             if err:
                 body.append(f'<p class="bad">{html.escape(err)}</p>')
             for n in state.notes:
@@ -282,6 +404,7 @@ def make_handler(state: State):
                 body.append(f'<p><b>진행 중</b> · {html.escape(state.status)} · {PRESETS[state.preset][0]} · '
                             f'{html.escape(lineup)}</p>'
                             '<form method="post" action="/stop"><button>중단</button></form>')
+                body.append(copy_button(debate_text(state.messages, state.role_labels)))
                 body.append(render_messages(state.messages, state.role_labels))
             else:
                 role_opts = '<option value="auto">방식대로</option>' + "".join(
@@ -334,8 +457,21 @@ def make_handler(state: State):
                     for m in t["messages"]]
             links = " · ".join(f'<a href="/runs/{name}/{f}">{f}</a>' for f in RUN_FILES if (d / f).exists())
             roles = json.loads((d / "roles.json").read_text()) if (d / "roles.json").exists() else {}
-            return page(name, f"<p><a href='/'>← 처음으로</a></p><h1>{name}</h1><p>{links}</p>"
-                        + render_messages(msgs, roles))
+            return page(name, f"<p><a href='/'>← 처음으로</a></p><h1>{name}</h1>"
+                        + copy_button(self.run_text(name, d), f"/runs/{name}/debate.txt")
+                        + render_messages(msgs, roles) + f'<p class="muted">원본 파일: {links}</p>')
+
+        def run_text(self, name: str, d: Path) -> str:
+            t = json.loads((d / "transcript.json").read_text())
+            names = {p["participant_id"]: p["display_name"] for p in t["participants"]}
+            msgs = [(m["sequence"], names.get(m["sender_id"], "?"), m["sender_vendor"], m["text"].strip())
+                    for m in t["messages"]]
+            roles = json.loads((d / "roles.json").read_text()) if (d / "roles.json").exists() else {}
+            meta = json.loads((d / "meta.json").read_text()) if (d / "meta.json").exists() else {}
+            mode = PRESETS.get(meta.get("preset", "free"), ("",))[0]
+            ais = [p["display_name"] for p in t["participants"] if p["kind"] == "ai"]
+            header = f"AI 토론 기록 {name}\n방식: {mode}\n참가: {', '.join(ais)}"
+            return debate_text(msgs, roles, header)
 
     return H
 
@@ -352,9 +488,8 @@ def main() -> None:
     for n in notes:
         print("설정 확인:", n, flush=True)
     PASSWORD = os.environ.get("RUNNER_PASSWORD", "")
-    if PASSWORD and len(PASSWORD) < 12:
-        notes.append("RUNNER_PASSWORD가 12자보다 짧습니다. 인터넷에 공개한다면 더 긴 비밀번호로 바꾸세요.")
-        print("설정 확인:", notes[-1], flush=True)
+    if PASSWORD and len(PASSWORD) < 12:  # log only; not shown on the page
+        print("설정 확인: RUNNER_PASSWORD가 12자보다 짧습니다. 인터넷에 공개한다면 더 긴 비밀번호로 바꾸세요.", flush=True)
     if not PASSWORD:
         sys.exit("RUNNER_PASSWORD 환경변수를 설정하세요 (이 페이지의 비밀번호).")
     data = Path(a.data)
@@ -376,6 +511,7 @@ def main() -> None:
     try:
         state = State(data, board)
         state.notes = notes
+        state.sessions = Sessions(data / "sessions.json")
         ThreadingHTTPServer((a.host, a.port), make_handler(state)).serve_forever()
     finally:
         server.terminate()

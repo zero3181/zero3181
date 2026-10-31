@@ -187,6 +187,7 @@ class Debate:
     out_dir: Path
     models: dict[str, str] = field(default_factory=dict)
     roles: dict[str, str] = field(default_factory=dict)  # kind -> ROLES key
+    summary: bool = True  # when Claude takes part, its last message summarizes the whole debate
     max_messages: int | None = None
     followups: list[str] | None = None
     min_round_trips: int = 10
@@ -206,6 +207,14 @@ class Debate:
         (self.out_dir / "roles.json").write_text(json.dumps(
             {SEAT_TYPES[k]["name"]: ROLES[r][0] for k, r in self.roles.items()}, ensure_ascii=False))
         max_messages = self.max_messages or PER_SEAT_MESSAGES * len(self.kinds)
+        n = len(self.kinds)
+        final_turn = None
+        if self.summary and "claude" in self.kinds:
+            # Turns go round in seat order, so message k is spoken by kinds[(k - 1) % n].
+            # Trim the total so the very last message falls on Claude.
+            pos = self.kinds.index("claude")
+            max_messages -= (max_messages - (pos + 1)) % n
+            final_turn = (max_messages - pos - 1) // n + 1
         followups = list(DEFAULT_FOLLOWUPS if self.followups is None else self.followups)
         procs: dict[str, subprocess.Popen] = {}
         logs: dict[str, Path] = {}
@@ -238,6 +247,8 @@ class Debate:
                 if self.roles.get(k):
                     label, desc = ROLES[self.roles[k]]
                     cmd += ["--role", f"{label}: {desc}"]
+                if k == "claude" and final_turn:
+                    cmd += ["--final-summary-turn", str(final_turn)]
                 logs[t["name"]] = self.out_dir / f"seat-{k}.log"
                 procs[t["name"]] = subprocess.Popen(
                     [sys.executable, str(ROOT / "mb.py"), *cmd], cwd=ROOT,
@@ -251,7 +262,8 @@ class Debate:
             lineup = ", ".join(f"{SEAT_TYPES[k]['name']}={ROLES[self.roles[k]][0]}"
                                for k in self.kinds if self.roles.get(k))
             user.post(f"주제: {self.topic}\n" + (f"역할: {lineup}\n각자 맡은 역할에 맞게 발언하고, " if lineup
-                      else "서로의 주장에 구체적으로 반박하거나 보완하면서, ") + "각 발언은 4~6문장으로 짧게 해주세요.", None)
+                      else "서로의 주장에 구체적으로 반박하거나 보완하면서, ") + "각 발언은 4~6문장으로 짧게 해주세요."
+                      + ("\n마지막 발언은 Claude가 전체 토론을 요약해 마무리합니다." if final_turn else ""), None)
             timeout_min = self.timeout_min or max(30, 2 * max_messages)
             shown, deadline, failed = 0, time.time() + timeout_min * 60, ""
             while True:

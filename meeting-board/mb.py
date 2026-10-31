@@ -134,6 +134,7 @@ def cmd_run_seat(a):
     else:
         sys.exit("unknown seat kind")
     seat.role = a.role or ""
+    seat.final_summary_turn = a.final_summary_turn
     try:
         n = seat.run(max_replies=a.max_replies)
         print(f"seat finished after {n} replies", file=sys.stderr)
@@ -219,6 +220,7 @@ def main():
     p.add_argument("--bridge", help="command seat: bridge program (stdin=meeting text, stdout=reply)")
     p.add_argument("--session-id")
     p.add_argument("--role", help="debate role text added to this seat's system prompt")
+    p.add_argument("--final-summary-turn", type=int, help="on this reply number, summarize the whole debate")
     p.add_argument("--max-replies", type=int); p.set_defaults(f=cmd_run_seat)
 
     p = sub.add_parser("agent-wait"); p.add_argument("--session-id"); p.add_argument("--vendor-model")

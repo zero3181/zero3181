@@ -20,7 +20,7 @@ import subprocess
 import tempfile
 import uuid
 
-from .base import BoardMessage, Reply, SeatAdapter, frame_for_model, http_json
+from .base import BoardMessage, Reply, SeatAdapter, http_json
 
 
 class DummySeat(SeatAdapter):
@@ -75,7 +75,7 @@ class ClaudeCodeSeat(SeatAdapter):
                                              "tools": "none"}
 
     def respond(self, messages: list[BoardMessage]) -> Reply:
-        prompt = frame_for_model(messages)
+        prompt = self.frame(messages)
         cmd = [self.claude_bin, "-p", "--output-format", "json", "--tools", "",
                "--strict-mcp-config", "--setting-sources", "",
                "--append-system-prompt", self.system_prompt()]
@@ -162,7 +162,7 @@ class APISeat(SeatAdapter):
     def respond(self, messages: list[BoardMessage]) -> Reply:
         # Add the turn to history only after the call succeeds, so a retry does not
         # send the same meeting text twice.
-        self.history.append(("user", frame_for_model(messages)))
+        self.history.append(("user", self.frame(messages)))
         try:
             text, prov = getattr(self, "_call_" + self.provider.replace("-", "_"))()
         except Exception:
@@ -246,7 +246,7 @@ class CommandSeat(SeatAdapter):
 
     def respond(self, messages: list[BoardMessage]) -> Reply:
         env = dict(os.environ, MB_SEAT_SESSION_ID=self.session_id)
-        proc = subprocess.run(self.command, input=frame_for_model(messages), capture_output=True, text=True,
+        proc = subprocess.run(self.command, input=self.frame(messages), capture_output=True, text=True,
                               timeout=self.timeout, env=env, shell=False)
         if proc.returncode != 0:
             raise RuntimeError(f"bridge exited {proc.returncode}: {proc.stderr[-500:]}")

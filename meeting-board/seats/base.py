@@ -146,6 +146,13 @@ MEETING_SYSTEM_PROMPT = (
     "발언 하나만 작성하세요. 답변은 간결하게(대략 6문장 이내) 하세요."
 )
 
+# Added by the seat itself on its last turn when the operator asked it to close the debate.
+FINAL_SUMMARY_NOTE = (
+    "[사회자 안내] 이번이 이 토론의 마지막 발언입니다. 새 주장을 덧붙이지 말고, 지금까지의 전체 토론을 "
+    "요약해 마무리해 주세요. 주제, 참가자별 핵심 주장, 합의된 점, 남은 쟁점, 결론 순서로 정리하세요. "
+    "이번 발언은 6문장 제한 없이 필요한 만큼 써도 됩니다."
+)
+
 
 class SeatAdapter:
     """Base seat. Subclasses implement `respond()` (and optionally `session_info()`)."""
@@ -153,6 +160,12 @@ class SeatAdapter:
     vendor: str = "unknown"
     transport: str = "unknown"
     role: str = ""  # debate role set by the operator (e.g. "찬성"), added to the system prompt
+    final_summary_turn: int | None = None  # this reply number closes the debate with a summary
+    turn_note: str = ""  # extra moderator note for the current turn only
+
+    def frame(self, messages: list["BoardMessage"]) -> str:
+        text = frame_for_model(messages)
+        return text + ("\n\n" + self.turn_note if self.turn_note else "")
 
     def system_prompt(self) -> str:
         return MEETING_SYSTEM_PROMPT + (f"\n\n[이 회의에서 당신의 역할]\n{self.role}" if self.role else "")
@@ -247,6 +260,10 @@ class SeatAdapter:
                 self.log(f"[{self.vendor}] read {len(msgs)} message(s): "
                          + ", ".join(f"{m.message_id}<{m.sender_vendor}>" for m in msgs))
                 reply = None
+                final = self.final_summary_turn is not None and replies + 1 >= self.final_summary_turn
+                self.turn_note = FINAL_SUMMARY_NOTE if final else ""
+                if final:
+                    self.log(f"[{self.vendor}] final turn: summarizing the debate")
                 for attempt in range(MODEL_ATTEMPTS):
                     try:
                         reply = self.respond(msgs)

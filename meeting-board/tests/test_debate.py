@@ -110,5 +110,34 @@ class LoginGuardTest(unittest.TestCase):
         self.assertGreater(g.wait_seconds("1.1.1.1", now=2001), 0)
 
 
+
+class SessionsTest(unittest.TestCase):
+    def test_login_kept_across_restart_and_dropped_on_password_change(self):
+        import tempfile
+        import runner
+        d = Path(tempfile.mkdtemp())
+        runner.PASSWORD = "first-password-123"
+        s = runner.Sessions(d / "sessions.json")
+        tok = s.create()
+        self.assertTrue(s.valid(tok))
+        self.assertFalse(s.valid("other"))
+        self.assertTrue(runner.Sessions(d / "sessions.json").valid(tok))  # restart
+        self.assertNotIn(tok, (d / "sessions.json").read_text())  # only a hash is stored
+        runner.PASSWORD = "changed-password-456"
+        self.assertFalse(runner.Sessions(d / "sessions.json").valid(tok))
+        s.drop(tok)
+
+
+class FinalSummaryTest(unittest.TestCase):
+    def test_note_only_on_final_turn(self):
+        from seats.adapters import APISeat
+        from seats.base import BoardMessage, FINAL_SUMMARY_NOTE
+        seat = APISeat(None, provider="openai-compatible", api_key="k", base_url="http://x", vendor="v", model="m")
+        m = [BoardMessage("msg_1", 1, "ai_x", "google", "ai", "hi", None, "t", "Gemini")]
+        self.assertNotIn(FINAL_SUMMARY_NOTE, seat.frame(m))
+        seat.turn_note = FINAL_SUMMARY_NOTE
+        self.assertTrue(seat.frame(m).endswith(FINAL_SUMMARY_NOTE))
+
+
 if __name__ == "__main__":
     unittest.main()
