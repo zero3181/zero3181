@@ -162,7 +162,7 @@ footer { font-size: 12px; color: var(--muted); }
     const mine = tokens();
     S.names.forEach((nm, i) => {
       const id = slotId(i), st = S.done[i];
-      const cls = ["spine", st ? "done" : "", S.sel === id ? "sel" : "", mine[id] ? "mine" : ""].join(" ");
+      const cls = ["spine", st ? "done" : "", S.sel === id ? "sel" : "", st && mine[id] ? "mine" : ""].join(" ");
       const b = el("button", { class: cls, type: "button", role: "listitem", "aria-label": nm + (st ? " 추천 완료" : " 대기 중") }, [
         el("span", { class: "no", text: String(i + 1).padStart(2, "0") }),
         el("span", { class: "nm", text: nm }),
@@ -269,6 +269,10 @@ footer { font-size: 12px; color: var(--muted); }
     if (s.error) throw new Error(s.error);
     const changed = JSON.stringify([S.names, S.done, S.drawn]) !== JSON.stringify([s.names, s.done, s.drawn]);
     S.names = s.names || []; S.done = s.done || []; S.drawn = !!s.drawn;
+    // Forget saved-edit tokens for seats the server says are empty (e.g. after the organizer reset).
+    const tk = tokens(); let dropped = false;
+    Object.keys(tk).forEach((id) => { const i = slotIdx(id); if (!(i >= 0 && i < S.done.length && S.done[i])) { delete tk[id]; dropped = true; } });
+    if (dropped) lsSet("bookswap.tokens", JSON.stringify(tk));
     $("loadMsg").hidden = true;
     if (changed) { renderShelf(); if (!S.formOpen) renderPanel(); }
   }
