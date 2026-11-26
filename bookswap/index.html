@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>블라인드 북 스왑</title>
+<meta name="description" content="부서원이 한 권씩 책을 비공개로 추천하고, 모두 완료되면 다른 사람에게 무작위로 배정됩니다.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap">
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+/* Layout: a single column; the roster is a bookshelf of spines, the form is a library checkout card. */
+:root {
+  --paper: #EDF0EA;
+  --surface: #F8FAF6;
+  --ink: #1C2621;
+  --muted: #5C6B63;
+  --line: #C9D2CB;
+  --cloth: #2E5B48;
+  --cloth-ink: #F2F6F3;
+  --stamp: #B4432C;
+  --focus: #2E5B48;
+  --display: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --mono: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #121814; --surface: #1A221D; --ink: #E3EAE5; --muted: #98A89F; --line: #2F3B34;
+    --cloth: #5E9C80; --cloth-ink: #0E1512; --stamp: #E07A60; --focus: #7FBFA2; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #121814; --surface: #1A221D; --ink: #E3EAE5; --muted: #98A89F; --line: #2F3B34;
+  --cloth: #5E9C80; --cloth-ink: #0E1512; --stamp: #E07A60; --focus: #7FBFA2; color-scheme: dark;
+}
+body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 760px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 64px; display: flex; flex-direction: column; gap: 36px; }
+h1, h2 { font-family: var(--display); font-weight: 700; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(30px, 6vw, 42px); line-height: 1.2; letter-spacing: -0.02em; font-weight: 800; }
+h2 { font-size: 21px; }
+p { margin: 0; }
+.eyebrow { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 12px; }
+.lede { color: var(--muted); max-width: 60ch; }
+.rules { display: flex; flex-wrap: wrap; gap: 8px; }
+.rules span { font-size: 13px; border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; color: var(--muted); }
+
+.progress { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.count { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 14px; color: var(--muted); }
+.count b { color: var(--ink); font-size: 20px; }
+
+/* Shelf */
+.shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; padding: 16px 14px 0; border-bottom: 8px solid var(--line); }
+.spine { position: relative; height: 150px; border: 1.5px solid var(--cloth); border-radius: 4px 4px 0 0; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 4px 8px; transition: transform .15s ease; }
+.spine:hover { transform: translateY(-4px); }
+.spine:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.spine .no { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.spine .nm { writing-mode: vertical-rl; font-family: var(--display); font-weight: 700; font-size: 16px; letter-spacing: 0.08em; max-height: 96px; overflow: hidden; }
+.spine .st { font-size: 11px; color: var(--muted); }
+.spine.done { background: var(--cloth); color: var(--cloth-ink); }
+.spine.done .no, .spine.done .st { color: var(--cloth-ink); opacity: .85; }
+.spine.sel { box-shadow: 0 0 0 3px var(--stamp); }
+.spine.mine::after { content: "나"; position: absolute; top: -9px; right: -6px; background: var(--stamp); color: #fff; font-size: 11px; border-radius: 999px; padding: 0 7px; line-height: 18px; }
+
+/* Card */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 22px; display: flex; flex-direction: column; gap: 16px; }
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; border-bottom: 1px dashed var(--line); padding-bottom: 12px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+label { font-size: 13px; font-weight: 600; }
+.hint { font-size: 12px; color: var(--muted); }
+input, textarea { font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px; width: 100%; box-sizing: border-box; }
+input:focus-visible, textarea:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+textarea { resize: vertical; min-height: 72px; }
+.row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+@media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+button.btn { font: inherit; font-weight: 600; border-radius: 4px; padding: 10px 18px; cursor: pointer; border: 1.5px solid var(--cloth); background: var(--cloth); color: var(--cloth-ink); }
+button.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+button.btn.danger { background: transparent; color: var(--stamp); border-color: var(--stamp); }
+button.btn:disabled { opacity: .5; cursor: not-allowed; }
+button.btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.msg { font-size: 13px; color: var(--muted); }
+.msg.err { color: var(--stamp); }
+
+.stamp { display: inline-block; font-family: var(--mono); font-size: 13px; letter-spacing: .1em; color: var(--stamp); border: 2px solid var(--stamp); border-radius: 4px; padding: 4px 10px; transform: rotate(-3deg); }
+.done-box { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+
+.gift { display: flex; flex-direction: column; gap: 8px; }
+.gift .t { font-family: var(--display); font-size: 26px; font-weight: 700; line-height: 1.3; }
+.gift .a { color: var(--muted); }
+.gift .n { border-left: 3px solid var(--cloth); padding-left: 12px; white-space: pre-wrap; }
+
+.notice { border: 1px dashed var(--line); border-radius: 6px; padding: 14px 16px; color: var(--muted); font-size: 14px; }
+footer { font-size: 12px; color: var(--muted); }
+/* Book search */
+.search { position: relative; display: flex; flex-direction: column; gap: 6px; }
+.results { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); max-height: 320px; overflow-y: auto; }
+.results:empty { display: none; }
+.result { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: center; text-align: left; font: inherit; color: var(--ink); background: transparent; border: 0; border-bottom: 1px solid var(--line); padding: 8px 10px; cursor: pointer; }
+.result:last-child { border-bottom: 0; }
+.result:hover, .result:focus-visible { background: var(--paper); outline: none; }
+.result img, .result .ph { width: 40px; height: 56px; object-fit: cover; border-radius: 2px; background: var(--line); }
+.result .rt { font-weight: 600; line-height: 1.35; min-width: 0; }
+.result .ra { font-size: 12px; color: var(--muted); }
+.result > div { min-width: 0; }
+.picked { display: flex; gap: 12px; align-items: center; }
+.picked img { width: 48px; height: 68px; object-fit: cover; border-radius: 2px; }
+.gift img { width: 96px; border-radius: 3px; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+@media (prefers-reduced-motion: reduce) { .spine { transition: none; } .spine:hover { transform: none; } }
+</style>
+<script src="config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Department Book Swap</span>
+    <h1>블라인드 북 스왑</h1>
+    <p class="lede">한 사람이 한 권씩 책을 추천합니다. 모두 추천을 마치면 추천된 책이 다른 사람에게 무작위로 배정됩니다. 누가 어떤 책을 추천했는지는 공개되지 않습니다.</p>
+    <div class="rules"><span>1인 1권</span><span>추천 내용 비공개</span><span>자기 책은 배정되지 않음</span></div>
+  </header>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <div class="progress">
+      <h2 id="shelfTitle">내 이름을 고르세요</h2>
+      <span class="count" id="count"><b>–</b> / – 추천 완료</span>
+    </div>
+    <div class="shelf" id="shelf" role="list"></div>
+    <p class="msg" id="loadMsg">명단을 불러오는 중입니다…</p>
+  </section>
+
+  <section class="card" id="panel" hidden></section>
+
+  <footer>추천한 책은 진행자의 구글 시트에만 저장되고, 다른 참여자에게는 완료 표시만 보입니다. 추천을 수정하려면 처음 저장한 기기와 브라우저에서 열어 주세요.</footer>
+</div>
+
+<script>
+(function () {
+  const API = window.BOOKSWAP_API || "";
+  const $ = (id) => document.getElementById(id);
+  const S = { names: [], done: [], drawn: false, sel: null, editing: false, cache: {} };
+
+  const slotId = (i) => "p" + String(i + 1).padStart(2, "0");
+  const slotIdx = (id) => parseInt(id.slice(1), 10) - 1;
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function tokens() { try { return JSON.parse(lsGet("bookswap.tokens") || "{}"); } catch (e) { return {}; } }
+  function setToken(slot, t) { const m = tokens(); m[slot] = t; lsSet("bookswap.tokens", JSON.stringify(m)); }
+
+  function el(tag, attrs, kids) {
+    const n = document.createElement(tag);
+    if (attrs) for (const k in attrs) { if (k === "text") n.textContent = attrs[k]; else if (k === "class") n.className = attrs[k]; else n.setAttribute(k, attrs[k]); }
+    (kids || []).forEach((c) => c && n.appendChild(c));
+    return n;
+  }
+  function img(src, cls) { return /^https:\/\//.test(src || "") ? el("img", { src, alt: "", class: cls || "", loading: "lazy", referrerpolicy: "no-referrer" }) : el("div", { class: "ph" }); }
+
+  async function api(params, post) {
+    const url = post ? API : API + "?" + new URLSearchParams(params).toString();
+    const res = await fetch(url, post ? { method: "POST", body: JSON.stringify(params) } : {});
+    if (!res.ok) throw new Error("http " + res.status);
+    return res.json();
+  }
+
+  /* ---------- shelf ---------- */
+  function renderShelf() {
+    const shelf = $("shelf");
+    shelf.replaceChildren();
+    const total = S.names.length, done = S.done.filter(Boolean).length;
+    $("count").replaceChildren(el("b", { text: String(done) }), document.createTextNode(" / " + total + " 추천 완료"));
+    $("shelfTitle").textContent = S.drawn ? "받은 책을 확인하세요" : "내 이름을 고르세요";
+    const mine = tokens();
+    S.names.forEach((nm, i) => {
+      const id = slotId(i), st = S.done[i];
+      const cls = ["spine", st ? "done" : "", S.sel === id ? "sel" : "", mine[id] ? "mine" : ""].join(" ");
+      const b = el("button", { class: cls, type: "button", role: "listitem", "aria-label": nm + (st ? " 추천 완료" : " 대기 중") }, [
+        el("span", { class: "no", text: String(i + 1).padStart(2, "0") }),
+        el("span", { class: "nm", text: nm }),
+        el("span", { class: "st", text: S.drawn ? "열기" : (st ? "완료" : "대기") })
+      ]);
+      b.addEventListener("click", () => { S.sel = id; S.editing = false; lsSet("bookswap.slot", id); renderShelf(); renderPanel(); $("panel").scrollIntoView({ behavior: "smooth", block: "nearest" }); });
+      shelf.appendChild(b);
+    });
+  }
+
+  /* ---------- panel ---------- */
+  function head(p, i) {
+    p.appendChild(el("div", { class: "card-head" }, [el("h2", { text: S.names[i] + " 님" }), el("span", { class: "eyebrow", text: "No. " + String(i + 1).padStart(2, "0") })]));
+  }
+
+  async function renderPanel() {
+    const p = $("panel");
+    const i = S.sel ? slotIdx(S.sel) : -1;
+    if (i < 0 || i >= S.names.length) { p.hidden = true; return; }
+    const sel = S.sel;
+    const my = S.renderSeq = (S.renderSeq || 0) + 1;
+    S.formOpen = false;
+    p.hidden = false; p.replaceChildren(); head(p, i);
+    const token = tokens()[sel];
+
+    if (S.drawn) {
+      const wait = el("p", { class: "msg", text: "받은 책을 불러오는 중…" }); p.appendChild(wait);
+      try {
+        const g = await api({ action: "assignment", slot: sel });
+        if (S.renderSeq !== my) return;
+        wait.remove();
+        if (!g.title) { p.appendChild(el("p", { class: "msg err", text: "이 자리에 배정된 책을 찾지 못했습니다. 진행자에게 알려 주세요." })); return; }
+        let cover = null;
+        try { const r = await api({ action: "search", q: g.title + " " + (g.author || "") }); const hit = (r.items || []).find((x) => x.thumbnail); if (hit) cover = img(hit.thumbnail); } catch (e) {}
+        if (S.renderSeq !== my) return;
+        p.appendChild(el("div", { class: "gift" }, [
+          el("span", { class: "eyebrow", text: "당신에게 배정된 책" }),
+          cover && cover.tagName === "IMG" ? cover : null,
+          el("div", { class: "t", text: g.title }),
+          g.author ? el("div", { class: "a", text: g.author }) : null,
+          g.note ? el("div", { class: "n", text: g.note }) : null
+        ]));
+      } catch (e) { wait.className = "msg err"; wait.textContent = "불러오지 못했습니다. 잠시 후 다시 눌러 주세요."; }
+      return;
+    }
+
+    if (S.done[i] && !token) {
+      p.appendChild(el("div", { class: "done-box" }, [
+        el("span", { class: "stamp", text: "추천 완료" }),
+        el("p", { class: "msg", text: "이 자리는 이미 추천을 마쳤습니다. 내 이름이 맞는데 다른 기기에서 저장했다면 그 기기에서 수정할 수 있습니다." })
+      ]));
+      return;
+    }
+
+    if (S.done[i] && token && !S.editing) {
+      const edit = el("button", { class: "btn ghost", type: "button", text: "수정하기" });
+      edit.addEventListener("click", () => { S.editing = true; renderPanel(); });
+      const mineLine = el("p", { class: "msg", text: "" });
+      p.appendChild(el("div", { class: "done-box" }, [
+        el("span", { class: "stamp", text: "추천 완료" }),
+        el("p", { text: "추천을 저장했습니다. 다른 사람에게는 완료 표시만 보입니다." }),
+        mineLine, edit
+      ]));
+      try { const m = await api({ action: "mine", slot: sel, token }); if (m.title) { S.cache[sel] = m; mineLine.textContent = "내가 추천한 책: " + m.title + (m.author ? " · " + m.author : ""); } } catch (e) {}
+      return;
+    }
+
+    renderForm(p, sel, token);
+  }
+
+  function renderForm(p, sel, token) {
+    S.formOpen = true;
+    const form = el("form", { novalidate: "" });
+    form.style.cssText = "display:flex;flex-direction:column;gap:14px";
+    const q = el("input", { id: "fSearch", type: "search", autocomplete: "off", placeholder: "책 제목이나 저자로 검색" });
+    const results = el("div", { class: "results", id: "fResults", role: "listbox" });
+    const sMsg = el("span", { class: "hint", text: "검색해서 고르거나, 아래에 직접 입력하세요." });
+    const search = el("div", { class: "field search" }, [el("label", { for: "fSearch", text: "책 검색" }), q, results, sMsg]);
+    const row = el("div", { class: "row" }, [
+      el("div", { class: "field" }, [el("label", { for: "fTitle", text: "책 제목" }), el("input", { id: "fTitle", maxlength: "120", autocomplete: "off" })]),
+      el("div", { class: "field" }, [el("label", { for: "fAuthor", text: "저자" }), el("input", { id: "fAuthor", maxlength: "80", autocomplete: "off" })])
+    ]);
+    const note = el("div", { class: "field" }, [
+      el("label", { for: "fNote", text: "추천 한마디 (선택)" }),
+      el("textarea", { id: "fNote", maxlength: "300", placeholder: "왜 이 책을 권하는지 한두 문장으로 적어 주세요." }),
+      el("span", { class: "hint", text: "받는 사람에게 그대로 보입니다. 내 이름이나 나를 알아볼 수 있는 내용은 쓰지 마세요." })
+    ]);
+    const msg = el("span", { class: "msg" });
+    const save = el("button", { class: "btn", type: "submit", text: token ? "수정 저장" : "추천 저장" });
+    form.append(search, row, note, el("div", { class: "actions" }, [save, msg]));
+    p.appendChild(form);
+    const prev = S.cache[sel];
+    if (token && prev) { $("fTitle").value = prev.title || ""; $("fAuthor").value = prev.author || ""; $("fNote").value = prev.note || ""; }
+
+    let timer = null, seq = 0;
+    q.addEventListener("input", () => {
+      clearTimeout(timer);
+      const v = q.value.trim();
+      if (v.length < 2) { results.replaceChildren(); sMsg.textContent = "두 글자 이상 입력하세요."; return; }
+      timer = setTimeout(async () => {
+        const my = ++seq;
+        sMsg.textContent = "검색 중…";
+        try {
+          const r = await api({ action: "search", q: v });
+          if (my !== seq) return;
+          results.replaceChildren();
+          (r.items || []).forEach((it) => {
+            const b = el("button", { class: "result", type: "button", role: "option" }, [
+              img(it.thumbnail),
+              el("div", {}, [el("div", { class: "rt", text: it.title }), el("div", { class: "ra", text: [it.author, it.publisher].filter(Boolean).join(" · ") })])
+            ]);
+            b.addEventListener("click", () => { $("fTitle").value = it.title; $("fAuthor").value = it.author; results.replaceChildren(); q.value = ""; sMsg.textContent = "선택했습니다. 필요하면 아래에서 고칠 수 있습니다."; $("fNote").focus(); });
+            results.appendChild(b);
+          });
+          sMsg.textContent = (r.items || []).length ? "책을 누르면 제목과 저자가 채워집니다." : "검색 결과가 없습니다. 아래에 직접 입력하세요.";
+        } catch (e) { if (my === seq) sMsg.textContent = "검색하지 못했습니다. 아래에 직접 입력하세요."; }
+      }, 400);
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = $("fTitle").value.trim(), author = $("fAuthor").value.trim(), noteV = $("fNote").value.trim();
+      if (!title) { msg.className = "msg err"; msg.textContent = "책 제목을 입력하세요."; $("fTitle").focus(); return; }
+      save.disabled = true; msg.className = "msg"; msg.textContent = "저장 중…";
+      try {
+        const r = await api({ action: "submit", slot: sel, token: token || "", title, author, note: noteV }, true);
+        if (r.error) {
+          const m = { taken: "방금 다른 사람이 이 자리에 추천을 저장했습니다.", already_drawn: "이미 배정이 끝나 수정할 수 없습니다.", title_required: "책 제목을 입력하세요." }[r.error] || "저장하지 못했습니다. 잠시 후 다시 시도하세요.";
+          throw Object.assign(new Error(r.error), { userMsg: m });
+        }
+        setToken(sel, r.token);
+        S.cache[sel] = { title, author, note: noteV };
+        S.editing = false; S.formOpen = false;
+        await refresh();
+        renderShelf(); renderPanel();
+      } catch (err) { save.disabled = false; msg.className = "msg err"; msg.textContent = err.userMsg || "저장하지 못했습니다. 인터넷 연결을 확인하고 다시 시도하세요."; }
+    });
+  }
+
+  /* ---------- boot ---------- */
+  async function refresh() {
+    const s = await api({ action: "status" });
+    if (s.error) throw new Error(s.error);
+    const changed = JSON.stringify([S.names, S.done, S.drawn]) !== JSON.stringify([s.names, s.done, s.drawn]);
+    S.names = s.names || []; S.done = s.done || []; S.drawn = !!s.drawn;
+    $("loadMsg").hidden = true;
+    if (changed) { renderShelf(); if (!S.formOpen) renderPanel(); }
+  }
+
+  async function boot() {
+    if (!API) { $("loadMsg").textContent = "아직 서버 주소가 설정되지 않았습니다. 진행자에게 알려 주세요."; return; }
+    S.sel = lsGet("bookswap.slot");
+    try { await refresh(); }
+    catch (e) { $("loadMsg").textContent = "명단을 불러오지 못했습니다. 잠시 후 새로 고쳐 주세요."; }
+    setInterval(() => { if (!document.hidden) refresh().catch(() => {}); }, 20000);
+  }
+  boot();
+})();
+</script>
+</body>
+</html>
