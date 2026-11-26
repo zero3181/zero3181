@@ -20,8 +20,8 @@ const PICKS = '추천';
 const DRAW = '배정';
 const TEST_PICKS = '테스트 추천';
 const TEST_DRAW = '테스트 배정';
-const PICK_HEADER = ['자리', '이름', '제목', '저자', '한마디', '수정 토큰', '저장 시각'];
-const DRAW_HEADER = ['자리', '받는 사람', '추천한 사람', '제목', '저자', '배정 시각'];
+const PICK_HEADER = ['자리', '이름', '제목', '저자', '추천 이유', '수정 토큰', '저장 시각'];
+const DRAW_HEADER = ['자리', '받는 사람', '추천한 사람', '제목', '저자', '추천 이유', '배정 시각'];
 
 // '테스트 배정 미리보기'에 쓰는 더미 추천 (명단 순서대로 한 권씩)
 const DUMMY_BOOKS = [
@@ -108,7 +108,7 @@ function readDraw_() {
   for (let r = 1; r < values.length; r++) {
     const v = values[r];
     if (!v[0]) continue;
-    bySlot[v[0]] = { title: String(v[3]), author: String(v[4]) };
+    bySlot[v[0]] = { title: String(v[3]), author: String(v[4]), note: String(v[5]) };
   }
   return { sh: sh, bySlot: bySlot, drawn: Object.keys(bySlot).length > 0 };
 }
@@ -179,7 +179,7 @@ function assignment_(slot) {
   if (!draw.drawn) return { drawn: false };
   const a = draw.bySlot[String(slot || '')];
   if (!a) return { drawn: true, error: 'not_found' };
-  return { drawn: true, title: a.title, author: a.author };
+  return { drawn: true, title: a.title, author: a.author, note: a.note };
 }
 
 /* ---------------- draw ---------------- */
@@ -196,7 +196,7 @@ function draw_(picks, sheetName) {
   const rows = order.map(function (receiver, i) {
     const giverSlot = order[(i + 1) % order.length];
     const giver = picks[giverSlot];
-    return [receiver, ROSTER[slotIndex_(receiver)], ROSTER[slotIndex_(giverSlot)], safeCell_(giver.title), safeCell_(giver.author), now];
+    return [receiver, ROSTER[slotIndex_(receiver)], ROSTER[slotIndex_(giverSlot)], safeCell_(giver.title), safeCell_(giver.author), safeCell_(giver.note || ''), now];
   });
   rows.sort(function (a, b) { return a[0] < b[0] ? -1 : 1; });
   const sh = sheet_(sheetName, DRAW_HEADER);
@@ -271,8 +271,9 @@ function menuTestDraw() {
   const picks = {};
   const pickRows = ids.map(function (id, i) {
     const b = DUMMY_BOOKS[i % DUMMY_BOOKS.length];
-    picks[id] = { title: b[0], author: b[1] };
-    return [id, ROSTER[i], b[0], b[1], '', '(테스트)', new Date()];
+    const reason = i % 3 === 2 ? '' : '(테스트) ' + ROSTER[i] + '의 추천 이유';
+    picks[id] = { title: b[0], author: b[1], note: reason };
+    return [id, ROSTER[i], b[0], b[1], reason, '(테스트)', new Date()];
   });
   const sh = sheet_(TEST_PICKS, PICK_HEADER);
   if (sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, PICK_HEADER.length).clearContent();
