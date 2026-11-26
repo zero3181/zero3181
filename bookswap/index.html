@@ -199,7 +199,6 @@ footer { font-size: 12px; color: var(--muted); }
           el("span", { class: "eyebrow", text: "당신에게 배정된 책" }),
           el("div", { class: "t", text: g.title }),
           g.author ? el("div", { class: "a", text: g.author }) : null,
-          g.note ? el("div", { class: "n", text: g.note }) : null
         ]));
       } catch (e) { wait.className = "msg err"; wait.textContent = "불러오지 못했습니다. 잠시 후 다시 눌러 주세요."; }
       return;
@@ -237,31 +236,26 @@ footer { font-size: 12px; color: var(--muted); }
       el("div", { class: "field" }, [el("label", { for: "fTitle", text: "책 제목" }), el("input", { id: "fTitle", maxlength: "120", autocomplete: "off" })]),
       el("div", { class: "field" }, [el("label", { for: "fAuthor", text: "저자" }), el("input", { id: "fAuthor", maxlength: "80", autocomplete: "off" })])
     ]);
-    const note = el("div", { class: "field" }, [
-      el("label", { for: "fNote", text: "추천 한마디 (선택)" }),
-      el("textarea", { id: "fNote", maxlength: "300", placeholder: "왜 이 책을 권하는지 한두 문장으로 적어 주세요." }),
-      el("span", { class: "hint", text: "받는 사람에게 그대로 보입니다. 내 이름이나 나를 알아볼 수 있는 내용은 쓰지 마세요." })
-    ]);
     const msg = el("span", { class: "msg" });
     const save = el("button", { class: "btn", type: "submit", text: token ? "수정 저장" : "추천 저장" });
-    form.append(row, note, el("div", { class: "actions" }, [save, msg]));
+    form.append(row, el("div", { class: "actions" }, [save, msg]));
     p.appendChild(form);
     const prev = S.cache[sel];
-    if (token && prev) { $("fTitle").value = prev.title || ""; $("fAuthor").value = prev.author || ""; $("fNote").value = prev.note || ""; }
+    if (token && prev) { $("fTitle").value = prev.title || ""; $("fAuthor").value = prev.author || ""; }
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const title = $("fTitle").value.trim(), author = $("fAuthor").value.trim(), noteV = $("fNote").value.trim();
+      const title = $("fTitle").value.trim(), author = $("fAuthor").value.trim();
       if (!title) { msg.className = "msg err"; msg.textContent = "책 제목을 입력하세요."; $("fTitle").focus(); return; }
       save.disabled = true; msg.className = "msg"; msg.textContent = "저장 중…";
       try {
-        const r = await api({ action: "submit", slot: sel, token: token || "", title, author, note: noteV }, true);
+        const r = await api({ action: "submit", slot: sel, token: token || "", title, author, note: "" }, true);
         if (r.error) {
           const m = { taken: "방금 다른 사람이 이 자리에 추천을 저장했습니다.", already_drawn: "이미 배정이 끝나 수정할 수 없습니다.", title_required: "책 제목을 입력하세요." }[r.error] || "저장하지 못했습니다. 잠시 후 다시 시도하세요.";
           throw Object.assign(new Error(r.error), { userMsg: m });
         }
         setToken(sel, r.token);
-        S.cache[sel] = { title, author, note: noteV };
+        S.cache[sel] = { title, author };
         S.editing = false; S.formOpen = false;
         await refresh();
         renderShelf(); renderPanel();
