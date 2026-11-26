@@ -1,0 +1,28 @@
+name: Deploy Book Swap page
+
+on:
+  push:
+    branches:
+      - claude/wizardly-gates-754cd4
+    paths:
+      - bookswap/**
+      - .github/workflows/bookswap.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Publishes bookswap/ to gh-pages under /bookswap/ and keeps the files already there (the news site).
+      - name: Deploy to gh-pages/bookswap
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./bookswap
+          destination_dir: bookswap
+          keep_files: true
