@@ -98,20 +98,6 @@ button.btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px;
 
 .notice { border: 1px dashed var(--line); border-radius: 6px; padding: 14px 16px; color: var(--muted); font-size: 14px; }
 footer { font-size: 12px; color: var(--muted); }
-/* Book search */
-.search { position: relative; display: flex; flex-direction: column; gap: 6px; }
-.results { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); max-height: 320px; overflow-y: auto; }
-.results:empty { display: none; }
-.result { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: center; text-align: left; font: inherit; color: var(--ink); background: transparent; border: 0; border-bottom: 1px solid var(--line); padding: 8px 10px; cursor: pointer; }
-.result:last-child { border-bottom: 0; }
-.result:hover, .result:focus-visible { background: var(--paper); outline: none; }
-.result img, .result .ph { width: 40px; height: 56px; object-fit: cover; border-radius: 2px; background: var(--line); }
-.result .rt { font-weight: 600; line-height: 1.35; min-width: 0; }
-.result .ra { font-size: 12px; color: var(--muted); }
-.result > div { min-width: 0; }
-.picked { display: flex; gap: 12px; align-items: center; }
-.picked img { width: 48px; height: 68px; object-fit: cover; border-radius: 2px; }
-.gift img { width: 96px; border-radius: 3px; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
 @media (prefers-reduced-motion: reduce) { .spine { transition: none; } .spine:hover { transform: none; } }
 </style>
 <script src="config.js"></script>
@@ -158,7 +144,6 @@ footer { font-size: 12px; color: var(--muted); }
     (kids || []).forEach((c) => c && n.appendChild(c));
     return n;
   }
-  function img(src, cls) { return /^https:\/\//.test(src || "") ? el("img", { src, alt: "", class: cls || "", loading: "lazy", referrerpolicy: "no-referrer" }) : el("div", { class: "ph" }); }
 
   async function api(params, post) {
     const url = post ? API : API + "?" + new URLSearchParams(params).toString();
@@ -210,12 +195,8 @@ footer { font-size: 12px; color: var(--muted); }
         if (S.renderSeq !== my) return;
         wait.remove();
         if (!g.title) { p.appendChild(el("p", { class: "msg err", text: "이 자리에 배정된 책을 찾지 못했습니다. 진행자에게 알려 주세요." })); return; }
-        let cover = null;
-        try { const r = await api({ action: "search", q: g.title + " " + (g.author || "") }); const hit = (r.items || []).find((x) => x.thumbnail); if (hit) cover = img(hit.thumbnail); } catch (e) {}
-        if (S.renderSeq !== my) return;
         p.appendChild(el("div", { class: "gift" }, [
           el("span", { class: "eyebrow", text: "당신에게 배정된 책" }),
-          cover && cover.tagName === "IMG" ? cover : null,
           el("div", { class: "t", text: g.title }),
           g.author ? el("div", { class: "a", text: g.author }) : null,
           g.note ? el("div", { class: "n", text: g.note }) : null
@@ -252,10 +233,6 @@ footer { font-size: 12px; color: var(--muted); }
     S.formOpen = true;
     const form = el("form", { novalidate: "" });
     form.style.cssText = "display:flex;flex-direction:column;gap:14px";
-    const q = el("input", { id: "fSearch", type: "search", autocomplete: "off", placeholder: "책 제목이나 저자로 검색" });
-    const results = el("div", { class: "results", id: "fResults", role: "listbox" });
-    const sMsg = el("span", { class: "hint", text: "검색해서 고르거나, 아래에 직접 입력하세요." });
-    const search = el("div", { class: "field search" }, [el("label", { for: "fSearch", text: "책 검색" }), q, results, sMsg]);
     const row = el("div", { class: "row" }, [
       el("div", { class: "field" }, [el("label", { for: "fTitle", text: "책 제목" }), el("input", { id: "fTitle", maxlength: "120", autocomplete: "off" })]),
       el("div", { class: "field" }, [el("label", { for: "fAuthor", text: "저자" }), el("input", { id: "fAuthor", maxlength: "80", autocomplete: "off" })])
@@ -267,35 +244,10 @@ footer { font-size: 12px; color: var(--muted); }
     ]);
     const msg = el("span", { class: "msg" });
     const save = el("button", { class: "btn", type: "submit", text: token ? "수정 저장" : "추천 저장" });
-    form.append(search, row, note, el("div", { class: "actions" }, [save, msg]));
+    form.append(row, note, el("div", { class: "actions" }, [save, msg]));
     p.appendChild(form);
     const prev = S.cache[sel];
     if (token && prev) { $("fTitle").value = prev.title || ""; $("fAuthor").value = prev.author || ""; $("fNote").value = prev.note || ""; }
-
-    let timer = null, seq = 0;
-    q.addEventListener("input", () => {
-      clearTimeout(timer);
-      const v = q.value.trim();
-      if (v.length < 2) { results.replaceChildren(); sMsg.textContent = "두 글자 이상 입력하세요."; return; }
-      timer = setTimeout(async () => {
-        const my = ++seq;
-        sMsg.textContent = "검색 중…";
-        try {
-          const r = await api({ action: "search", q: v });
-          if (my !== seq) return;
-          results.replaceChildren();
-          (r.items || []).forEach((it) => {
-            const b = el("button", { class: "result", type: "button", role: "option" }, [
-              img(it.thumbnail),
-              el("div", {}, [el("div", { class: "rt", text: it.title }), el("div", { class: "ra", text: [it.author, it.publisher].filter(Boolean).join(" · ") })])
-            ]);
-            b.addEventListener("click", () => { $("fTitle").value = it.title; $("fAuthor").value = it.author; results.replaceChildren(); q.value = ""; sMsg.textContent = "선택했습니다. 필요하면 아래에서 고칠 수 있습니다."; $("fNote").focus(); });
-            results.appendChild(b);
-          });
-          sMsg.textContent = (r.items || []).length ? "책을 누르면 제목과 저자가 채워집니다." : "검색 결과가 없습니다. 아래에 직접 입력하세요.";
-        } catch (e) { if (my === seq) sMsg.textContent = "검색하지 못했습니다. 아래에 직접 입력하세요."; }
-      }, 400);
-    });
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
