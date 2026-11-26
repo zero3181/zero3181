@@ -15,10 +15,21 @@ const ROSTER = [
   '장효민', '전하민', '정재하', '정종우', '진영규', '최보배', '하준성'
 ];
 
+const SPREADSHEET_TITLE = '블라인드 북 스왑';
 const PICKS = '추천';
 const DRAW = '배정';
+const TEST_PICKS = '테스트 추천';
+const TEST_DRAW = '테스트 배정';
 const PICK_HEADER = ['자리', '이름', '제목', '저자', '한마디', '수정 토큰', '저장 시각'];
-const DRAW_HEADER = ['자리', '받는 사람', '제목', '저자', '한마디', '배정 시각'];
+const DRAW_HEADER = ['자리', '받는 사람', '추천한 사람', '제목', '저자', '배정 시각'];
+
+// '테스트 배정 미리보기'에 쓰는 더미 추천 (명단 순서대로 한 권씩)
+const DUMMY_BOOKS = [
+  ['채식주의자', '한강'], ['아몬드', '손원평'], ['불편한 편의점', '김호연'], ['달러구트 꿈 백화점', '이미예'],
+  ['어린 왕자', '앙투안 드 생텍쥐페리'], ['사피엔스', '유발 하라리'], ['미움받을 용기', '기시미 이치로'],
+  ['데미안', '헤르만 헤세'], ['1984', '조지 오웰'], ['82년생 김지영', '조남주'], ['파친코', '이민진'],
+  ['원씽', '게리 켈러'], ['소년이 온다', '한강'], ['죽고 싶지만 떡볶이는 먹고 싶어', '백세희']
+];
 
 /* ---------------- web app ---------------- */
 
@@ -68,6 +79,12 @@ function sheet_(name, header) {
     sh = ss.insertSheet(name);
     sh.appendRow(header);
     sh.setFrozenRows(1);
+  } else {
+    const cur = sh.getRange(1, 1, 1, header.length).getValues()[0];
+    if (cur.join('|') !== header.join('|')) {
+      sh.getRange(1, 1, 1, Math.max(header.length, sh.getLastColumn() || 1)).clearContent();
+      sh.getRange(1, 1, 1, header.length).setValues([header]);
+    }
   }
   return sh;
 }
@@ -91,7 +108,7 @@ function readDraw_() {
   for (let r = 1; r < values.length; r++) {
     const v = values[r];
     if (!v[0]) continue;
-    bySlot[v[0]] = { title: String(v[2]), author: String(v[3]), note: String(v[4]) };
+    bySlot[v[0]] = { title: String(v[3]), author: String(v[4]) };
   }
   return { sh: sh, bySlot: bySlot, drawn: Object.keys(bySlot).length > 0 };
 }
@@ -142,7 +159,7 @@ function submit_(p) {
     let drawn = false;
     const after = readPicks_().bySlot;
     if (slotIds_().every(function (id) { return !!after[id]; })) {
-      draw_(after);
+      draw_(after, DRAW);
       drawn = true;
     }
     return { ok: true, token: token, drawn: drawn };
@@ -162,13 +179,13 @@ function assignment_(slot) {
   if (!draw.drawn) return { drawn: false };
   const a = draw.bySlot[String(slot || '')];
   if (!a) return { drawn: true, error: 'not_found' };
-  return { drawn: true, title: a.title, author: a.author, note: a.note };
+  return { drawn: true, title: a.title, author: a.author };
 }
 
 /* ---------------- draw ---------------- */
 
 // 섞은 뒤 원형으로 돌려 받기: 각자 다음 사람이 추천한 책을 받으므로 자기 책은 절대 받지 않습니다.
-function draw_(picks) {
+function draw_(picks, sheetName) {
   const ids = slotIds_();
   const order = ids.slice();
   for (let i = order.length - 1; i > 0; i--) {
@@ -177,11 +194,12 @@ function draw_(picks) {
   }
   const now = new Date();
   const rows = order.map(function (receiver, i) {
-    const giver = picks[order[(i + 1) % order.length]];
-    return [receiver, ROSTER[slotIndex_(receiver)], safeCell_(giver.title), safeCell_(giver.author), safeCell_(giver.note), now];
+    const giverSlot = order[(i + 1) % order.length];
+    const giver = picks[giverSlot];
+    return [receiver, ROSTER[slotIndex_(receiver)], ROSTER[slotIndex_(giverSlot)], safeCell_(giver.title), safeCell_(giver.author), now];
   });
   rows.sort(function (a, b) { return a[0] < b[0] ? -1 : 1; });
-  const sh = sheet_(DRAW, DRAW_HEADER);
+  const sh = sheet_(sheetName, DRAW_HEADER);
   if (sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, DRAW_HEADER.length).clearContent();
   sh.getRange(2, 1, rows.length, DRAW_HEADER.length).setValues(rows);
   SpreadsheetApp.flush();
@@ -229,15 +247,51 @@ function search_(q) {
 /* ---------------- organizer menu (시트 상단 '북 스왑' 메뉴) ---------------- */
 
 function onOpen() {
+  try { ensureTitle_(); } catch (e) {}
   SpreadsheetApp.getUi().createMenu('북 스왑')
     .addItem('진행 현황 보기', 'menuStatus')
     .addItem('배정 다시 하기', 'menuRedraw')
+    .addSeparator()
+    .addItem('테스트 배정 미리보기 (더미 데이터)', 'menuTestDraw')
+    .addItem('테스트 탭 지우기', 'menuClearTest')
     .addSeparator()
     .addItem('전체 초기화', 'menuReset')
     .addToUi();
 }
 
+function ensureTitle_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (ss.getName() !== SPREADSHEET_TITLE) ss.rename(SPREADSHEET_TITLE);
+}
+
+// 실제 '추천'/'배정' 탭과 참여자 화면에는 영향을 주지 않습니다.
+function menuTestDraw() {
+  ensureTitle_();
+  const ids = slotIds_();
+  const picks = {};
+  const pickRows = ids.map(function (id, i) {
+    const b = DUMMY_BOOKS[i % DUMMY_BOOKS.length];
+    picks[id] = { title: b[0], author: b[1] };
+    return [id, ROSTER[i], b[0], b[1], '', '(테스트)', new Date()];
+  });
+  const sh = sheet_(TEST_PICKS, PICK_HEADER);
+  if (sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, PICK_HEADER.length).clearContent();
+  sh.getRange(2, 1, pickRows.length, PICK_HEADER.length).setValues(pickRows);
+  draw_(picks, TEST_DRAW);
+  SpreadsheetApp.getActiveSpreadsheet().setActiveSheet(sheet_(TEST_DRAW, DRAW_HEADER));
+  SpreadsheetApp.getUi().alert('더미 추천 14건으로 테스트 배정을 만들었습니다.\n\n' +
+    "'테스트 배정' 탭에서 받는 사람과 추천한 사람이 늘 다른지 확인해 보세요. 다시 누를 때마다 새로 섞입니다.\n" +
+    '실제 추천과 참여자 화면에는 영향이 없습니다.');
+}
+
+function menuClearTest() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  [TEST_PICKS, TEST_DRAW].forEach(function (n) { const sh = ss.getSheetByName(n); if (sh) ss.deleteSheet(sh); });
+  SpreadsheetApp.getUi().alert('테스트 탭을 지웠습니다.');
+}
+
 function menuStatus() {
+  ensureTitle_();
   const s = status_();
   const done = s.done.filter(Boolean).length;
   const waiting = s.names.filter(function (_, i) { return !s.done[i]; });
@@ -252,7 +306,7 @@ function menuRedraw() {
   const picks = readPicks_().bySlot;
   if (!slotIds_().every(function (id) { return !!picks[id]; })) { ui.alert('아직 모든 사람이 추천하지 않았습니다.'); return; }
   if (ui.alert('기존 배정을 지우고 새로 배정할까요?', ui.ButtonSet.YES_NO) !== ui.Button.YES) return;
-  draw_(picks);
+  draw_(picks, DRAW);
   ui.alert('새로 배정했습니다.');
 }
 
